@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gcp-<intergation_id>
+  namespace: tenant-<tenant_id>
+  labels:
+    tenant: <tenant_id>
+    collector: <intergation_id>
+    type: gcp
+spec:
+  selector:
+    matchLabels:
+      app: gcp-<intergation_id>
+  template:
+    metadata:
+      labels:
+        app: gcp-<intergation_id>
+    spec:
+      volumes:
+        - name:  gcp-alloy-<intergation_id>
+          secret:
+            secretName:  gcp-alloy-<intergation_id>
+        - name: gcp-logstash-<intergation_id>
+          secret:
+            secretName: gcp-logstash-<intergation_id>
+        - name: gcp-key-<intergation_id>
+          secret:
+            secretName: gcp-key-<intergation_id>
+      containers:
+      - name: alloy
+        image: grafana/alloy:v1.12.2
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        volumeMounts:
+          - name: gcp-alloy-<intergation_id>
+            readOnly: true
+            mountPath: /etc/alloy/
+      - name: logstash
+        image: public.ecr.aws/k9v9d5v2/admin-tools/crd-collectors/logstash:v1.0.1
+        imagePullPolicy: IfNotPresent
+        args:
+          - "-f"
+          - "/configs/pipeline.conf"
+        volumeMounts:
+          - name: gcp-logstash-<intergation_id>
+            readOnly: true
+            mountPath: /configs/
+          - name: gcp-key-<intergation_id>
+            readOnly: true
+            mountPath: /gcp/
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m" 

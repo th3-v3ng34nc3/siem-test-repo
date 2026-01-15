@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aws-<intergation_id>
+  namespace: tenant-<tenant_id>
+  annotations:
+    tenant: <tenant_id>
+    collector: <intergation_id>
+    type: aws
+spec:
+  selector:
+    matchLabels:
+      app: aws-<intergation_id>
+  template:
+    metadata:
+      labels:
+        app: aws-<intergation_id>
+    spec:
+      volumes:
+        - name:  aws-<intergation_id>
+          secret:
+            secretName:  aws-<intergation_id>
+      containers:
+      - name: aws-<intergation_id>
+        image: grafana/alloy:v1.12.2
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+          - name: aws-<intergation_id>
+            readOnly: true
+            mountPath: /etc/alloy/

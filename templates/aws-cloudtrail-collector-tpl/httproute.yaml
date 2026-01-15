@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aws-<intergation_id>
+  namespace: tenant-<tenant_id>
+  annotations:
+    tenant: <tenant_id>
+    collector: <intergation_id>
+    type: aws
+    env: <siem_env>
+    kubernetes.io/ingress.class: "nginx"
+    nginx.org/mergeable-ingress-type: "minion"
+    nginx.org/rewrites: "serviceName=aws-<intergation_id> rewrite=/loki/api/v1/raw"
+    nginx.org/auth-type: "basic"
+    nginx.org/auth-secret: "htpasswd"
+spec:
+  rules:
+    - host: <siem_domain>
+      http:
+        paths:
+          - path: /<siem_env>/<tenant_id>/<tenant_endpoint>/<intergation_id>/push
+            pathType: Prefix
+            backend:
+              service:
+                name: aws-<intergation_id>
+                port:
+                  number: 8080

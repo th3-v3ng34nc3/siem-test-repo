@@ -1,0 +1,33 @@
+---
+apiVersion: external-secrets.io/v1
+kind: SecretStore
+metadata:
+  name: vault-backend
+  namespace: external-secrets
+spec:
+  provider:
+    vault:
+      server: "https://vault.accuknox.com:8200"
+      path: "siem/dev"
+      version: "v2"
+      auth:
+        kubernetes:
+          # This must match the -path used in the 'vault auth enable' command
+          mountPath: "siem/dev" 
+          role: "siem-dev-external-secrets"
+          serviceAccountRef:
+            name: "external-secrets"
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: role-tokenreview-binding
+subjects:
+  - kind: ServiceAccount
+    name: external-secrets
+    namespace: external-secrets
+roleRef:
+  kind: ClusterRole
+  name: system:auth-delegator
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,3 @@
+tenants:
+  - tenant: ref+vault://siem/dev/tenants/canary-user/ingestion_user/#username
+    password: ref+vault://siem/dev/tenants/canary-user/ingestion_user/#password

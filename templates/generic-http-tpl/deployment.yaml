@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: http-<intergation_id>
+  namespace: tenant-<tenant_id>
+  labels:
+    tenant: <tenant_id>
+    collector: <intergation_id>
+    type: http
+spec:
+  selector:
+    matchLabels:
+      app: http-<intergation_id>
+  template:
+    metadata:
+      labels:
+        app: http-<intergation_id>
+    spec:
+      volumes:
+        - name:  http-<intergation_id>
+          secret:
+            secretName:  http-<intergation_id>
+      containers:
+      - name: http-<intergation_id>
+        image: grafana/alloy:v1.12.2
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+          - name: http-<intergation_id>
+            readOnly: true
+            mountPath: /etc/alloy/

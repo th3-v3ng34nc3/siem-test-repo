@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: http-http-raw
+  namespace: tenant-canary-user
+  annotations:
+    tenant: canary-user
+    collector: http-raw
+    type: http
+    env: dev
+    kubernetes.io/ingress.class: "nginx"
+    nginx.org/mergeable-ingress-type: "minion"
+    nginx.org/rewrites: "serviceName=http-http-raw rewrite=/loki/api/v1/raw"
+    nginx.org/auth-type: "basic"
+    nginx.org/auth-secret: "htpasswd"
+spec:
+  rules:
+    - host: siem.v2.dev.accuknox.com
+      http:
+        paths:
+          - path: /dev/canary-user/3ff95da74d5a2314ce54da2c2b24bb63/http-raw/push
+            pathType: Prefix
+            backend:
+              service:
+                name: http-http-raw
+                port:
+                  number: 8080

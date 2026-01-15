@@ -1,0 +1,99 @@
+repositories:
+  - name: grafana
+    url: https://grafana.github.io/helm-charts
+  - name: prometheus-community
+    url: https://prometheus-community.github.io/helm-charts
+  - name: external-secrets
+    url: https://charts.external-secrets.io
+  - name: nginx-ingress
+    url: ghcr.io/nginx/charts
+    oci: true
+  - name: cert-manager
+    url: quay.io/jetstack/charts
+    oci: true
+---
+environments:
+  default:
+    values:
+      - storage:
+          region: ref+vault://<siem_backend_path>/#region
+          chunks: ref+vault://<siem_backend_path>/#chunks
+          admin: ref+vault://<siem_backend_path>/#admin
+          ruler: ref+vault://<siem_backend_path>/#ruler
+          accessKeyId: ref+vault://<siem_backend_path>/#accessKeyId
+          secretAccessKey: ref+vault://<siem_backend_path>/#secretAccessKey
+      - tenants.yaml
+      - canary:
+          username: ref+vault://<siem_mount_path>/tenants/canary-user/ingestion_user/#username
+          password: ref+vault://<siem_mount_path>/tenants/canary-user/ingestion_user/#password     
+---
+releases:
+  - name: external-secrets
+    chart: external-secrets/external-secrets
+    version: 1.2.0
+    namespace: external-secrets
+  - name: cert-manager
+    chart: cert-manager/cert-manager
+    version: v1.19.2
+    namespace: cert-manager
+    values:
+    - certmanager/defaults.yaml
+  - name: nginx-ingress
+    chart: nginx-ingress/nginx-ingress
+    version: 2.4.1
+    namespace: nginx-ingress
+  - name: alertmanager
+    chart: prometheus-community/alertmanager
+    version: 1.28.1
+    namespace: alertmgr
+    values:
+      - alertmgr/webhook.yaml
+  - name: loki
+    chart: grafana/loki
+    version: 6.45.2
+    namespace: loki
+    needs:
+      - alertmgr/alertmanager
+    values:
+      - loki/components.yaml
+      - loki/loki-common.yaml
+      - loki/loki-storage-config.gotmpl
+      - loki/loki-canary.gotmpl
+      - loki/multi-tenant.gotmpl
+      - loki/ruler-config.yaml
+  - name: grafana
+    chart: grafana/grafana
+    namespace: grafana
+    values:
+      - grafana/grafana-values.yaml
+    needs:
+      - loki/loki
+  - name: kustomize
+    chart: ./kustomize
+    needs:
+     - cert-manager/cert-manager
+     - external-secrets/external-secrets
+    hooks:
+      - events: ["postsync"]
+        showlogs: true
+        command: "sh"
+        args:
+          - "-c"
+          - |
+            # Loop until the certificate is found or we hit 30 attempts
+            count=0
+            until kubectl get certificate loki-ing-tls-secret -n nginx-ingress >/dev/null 2>&1 || [ $count -eq 30 ]; do
+              echo "Waiting for ingress-shim to create Certificate..."
+              sleep 1
+              count=$((count + 1))
+            done
+
+            if [ $count -eq 30 ]; then
+              echo "Timed out waiting for Certificate object."
+              exit 1
+            fi
+
+            echo "Certificate found. Annotating..."
+            if [ "$(kubectl get certificate loki-ing-tls-secret -n nginx-ingress -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')" != "True" ]; then
+              kubectl annotate certificate loki-ing-tls-secret cert-manager.io/issue-temporary-certificate="true" --overwrite -n nginx-ingress
+            fi

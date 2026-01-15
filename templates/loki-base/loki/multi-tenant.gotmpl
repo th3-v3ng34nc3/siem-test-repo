@@ -1,0 +1,11 @@
+loki:
+  auth_enabled: true
+  {{- if .Values.tenants }}
+  tenants:
+  {{- range .Values.tenants }}
+  - name: {{ .tenant }}
+    password: {{ .password }}
+  {{- end }}
+  {{- else }}
+  tenants: []
+  {{- end }}
