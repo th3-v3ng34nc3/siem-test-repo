@@ -37,7 +37,7 @@ fi
 
 vault_check_connect
 
-full_path="tenants/${TENANT_ID}/ingestion_user"
+full_path="tenants/${TENANT_ID}/loki_tenant"
 
 if ! vault kv get -mount="${SECRETS_MOUNT_PATH}/${ENV_ID}" "$full_path" &> /dev/null ; then
     echo "Error: Secret at path '$full_path' does not exist or is inaccessible."

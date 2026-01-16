@@ -89,7 +89,7 @@ USERNAME="$ENV_ID-$TENANT_ID"
 PASSWORD=$(openssl rand -base64 32)
 INGEST_ENDPOINT=$(echo "$USERNAME $RANDOM $ENV_ID $TENANT_ID" | sha224sum | awk '{print $1}' )
 
-create_tenant_secret "ingestion_user" "username=$USERNAME" "password=$PASSWORD" "endpoint=$INGEST_ENDPOINT"
+create_tenant_secret "loki_tenant" "username=$USERNAME" "password=$PASSWORD" "endpoint=$INGEST_ENDPOINT"
 
 cat << EOF > $TARGET_PATH/info
 Tenant Name: $TENANT_NAME
@@ -109,4 +109,4 @@ fi
 
 echo "Adding tenant to loki for athx & authz"
 TENANTS_FILE="$DIR_LOC/$ENV_ID/helm/loki-base/tenants.yaml"
-yq -i '.tenants |= ( .  + [{"tenant" : "ref+vault://'"${SECRETS_MOUNT_PATH}/${ENV_ID}/tenants/${TENANT_ID}/ingestion_user/#username"'", "password": "ref+vault://'"${SECRETS_MOUNT_PATH}/${ENV_ID}/tenants/${TENANT_ID}/ingestion_user/#password"'" }] | unique)' "$TENANTS_FILE"
+yq -i '.tenants |= ( .  + [{"tenant" : "ref+vault://'"${SECRETS_MOUNT_PATH}/${ENV_ID}/tenants/${TENANT_ID}/loki_tenant/#username"'", "password": "ref+vault://'"${SECRETS_MOUNT_PATH}/${ENV_ID}/tenants/${TENANT_ID}/loki_tenant/#password"'" }] | unique)' "$TENANTS_FILE"
