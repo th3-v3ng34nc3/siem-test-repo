@@ -35,6 +35,12 @@ spec:
             cpu: "500m"
         ports:
         - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
         volumeMounts:
           - name: http-<intergation_id>
             readOnly: true
