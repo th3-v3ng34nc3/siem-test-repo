@@ -62,3 +62,5 @@ resultsCache:
 gateway:
   service:
     type: ClusterIP
+  basicAuth:
+    enabled: true

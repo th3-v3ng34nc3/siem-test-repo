@@ -30,8 +30,8 @@ fi
 
 
 read -p "Enter the Tenant ID: " TENANT_ID
-if [[ ! $TENANT_ID =~ ^[1-9][0-9]*$ ]]; then
-    echo "Error: Tenant ID must be a positive integer (greater than 0 and cannot start with 0)."
+if [[ ! $TENANT_ID =~ $DNS_REGEX ]]; then
+    echo "Error: Tenant ID must DNS compliant (use lowercase, numbers, and hyphens)"
     exit 1
 fi
 
@@ -45,4 +45,6 @@ if ! vault kv get -mount="${SECRETS_MOUNT_PATH}/${ENV_ID}" "$full_path" &> /dev/
 fi
 
 SECRET=(vault kv get -mount="${SECRETS_MOUNT_PATH}/${ENV_ID}" "$full_path")
+
+echo $SECRET
 

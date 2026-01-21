@@ -11,21 +11,23 @@ repositories:
   - name: cert-manager
     url: quay.io/jetstack/charts
     oci: true
+  - name: prometheus-community
+    url: https://prometheus-community.github.io/helm-charts
 ---
 environments:
   default:
     values:
       - storage:
-          region: ref+vault://<siem_backend_path>/#region
-          chunks: ref+vault://<siem_backend_path>/#chunks
-          admin: ref+vault://<siem_backend_path>/#admin
-          ruler: ref+vault://<siem_backend_path>/#ruler
-          accessKeyId: ref+vault://<siem_backend_path>/#accessKeyId
-          secretAccessKey: ref+vault://<siem_backend_path>/#secretAccessKey
+          region: ref+vault://siem/stg/storage/backend/#region
+          chunks: ref+vault://siem/stg/storage/backend/#chunks
+          admin: ref+vault://siem/stg/storage/backend/#admin
+          ruler: ref+vault://siem/stg/storage/backend/#ruler
+          accessKeyId: ref+vault://siem/stg/storage/backend/#accessKeyId
+          secretAccessKey: ref+vault://siem/stg/storage/backend/#secretAccessKey
       - tenants.yaml
       - canary:
-          username: ref+vault://<siem_mount_path>/tenants/canary-user/loki_tenant/#username
-          password: ref+vault://<siem_mount_path>/tenants/canary-user/loki_tenant/#password     
+          username: ref+vault://siem/stg/tenants/canary-user/loki_tenant/#username
+          password: ref+vault://siem/stg/tenants/canary-user/loki_tenant/#password     
 ---
 releases:
   - name: external-secrets
@@ -97,3 +99,58 @@ releases:
             if [ "$(kubectl get certificate logs-tls-secret -n nginx-ingress -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')" != "True" ]; then
               kubectl annotate certificate logs-tls-secret cert-manager.io/issue-temporary-certificate="true" --overwrite -n nginx-ingress
             fi
+  - name: prometheus
+    namespace: monitoring
+    chart: prometheus-community/kube-prometheus-stack
+    version: 61.0.0 # Use the latest stable version
+    createNamespace: true
+    values:
+      - prometheus:
+          prometheusSpec:
+            # Important: This allows Prometheus to find your Loki ServiceMonitors
+            serviceMonitorSelectorNilUsesHelmValues: false
+            # Persistence for your metrics data on DigitalOcean
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: do-block-storage
+                  accessModes: ["ReadWriteOnce"]
+                  resources:
+                    requests:
+                      storage: 20Gi
+      # Disable Alertmanager if you just want metrics for now
+        alertmanager:
+          enabled: false
+        # Grafana is usually already installed with Loki, but you can enable it here
+        grafana:
+          enabled: false
+      - nodeExporter:
+          enabled: false
+        kubeStateMetrics:
+          enabled: false
+        kubernetesServiceMonitors:
+          enabled: false
+        
+        # 2. Disable scraping of core K8s components
+        kubeApiServer:
+          enabled: false
+        kubelet:
+          enabled: false
+        kubeControllerManager:
+          enabled: false
+        kubeScheduler:
+          enabled: false
+        kubeProxy:
+          enabled: false
+
+        # 3. Restrict Prometheus to ONLY find your labeled ServiceMonitors
+        prometheus:
+          prometheusSpec:
+            # This tells Prometheus: "ONLY scrape ServiceMonitors with this specific label"
+            serviceMonitorSelector:
+              matchLabels:
+                release: prometheus
+            # Disables the default behavior of picking up everything
+            serviceMonitorSelectorNilUsesHelmValues: false
+        defaultRules:
+          enabled: false

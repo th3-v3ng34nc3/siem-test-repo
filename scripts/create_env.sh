@@ -111,7 +111,7 @@ K8S_CLUSTER_CERT=$(kubectl config view --raw --minify -o jsonpath='{.clusters[0]
 
 echo "-----------------------------------------------------"
 echo "Env Name: $ENV_NAME"
-echo "Vault: $TARGET_PATH"
+echo "Vault: $VAULT_ADDR"
 echo "k8s: $K8S_CLUSTER_ADDR"
 echo "Action: Creating new siem env"
 echo "-----------------------------------------------------"

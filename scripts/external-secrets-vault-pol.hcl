@@ -1,3 +1,3 @@
-path "siem/xcitium/data/*" {
+path "siem/stg/data/*" {
   capabilities = ["read"]
 }

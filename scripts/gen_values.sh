@@ -12,10 +12,11 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-pushd "$ENVS_DIR/mgmt/dev/helm/loki-base"
+pushd "$ENVS_DIR/mgmt/stg/helm/loki-base"
 helmfile init
 vault_check_connect
 #helmfile write-values
+#helmfile destroy
 #helmfile sync
 helmfile -l name=kustomize sync
 popd

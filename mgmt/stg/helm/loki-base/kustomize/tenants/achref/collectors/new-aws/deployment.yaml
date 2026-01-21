@@ -1,30 +1,30 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: aws-<intergation_id>
-  namespace: tenant-<tenant_id>
+  name: aws-new-aws
+  namespace: tenant-achref
   annotations:
-    tenant: <tenant_id>
-    collector: <intergation_id>
+    tenant: achref
+    collector: new-aws
     type: aws
 spec:
   selector:
     matchLabels:
-      app: aws-<intergation_id>
+      app: aws-new-aws
   template:
     metadata:
       labels:
-        app: aws-<intergation_id>
+        app: aws-new-aws
     spec:
       volumes:
-        - name:  aws-alloy-<intergation_id>
+        - name:  aws-alloy-new-aws
           secret:
-            secretName:  aws-alloy-<intergation_id>
-        - name: aws-logstash-<intergation_id>
+            secretName:  aws-alloy-new-aws
+        - name: aws-logstash-new-aws
           secret:
-            secretName: aws-logstash-<intergation_id>
+            secretName: aws-logstash-new-aws
       containers:
-      - name: aws-alloy-<intergation_id>
+      - name: aws-alloy-new-aws
         image: grafana/alloy:v1.12.2
         imagePullPolicy: IfNotPresent
         readinessProbe:
@@ -45,7 +45,7 @@ spec:
         ports:
         - containerPort: 8080
         volumeMounts:
-          - name: aws-alloy-<intergation_id>
+          - name: aws-alloy-new-aws
             readOnly: true
             mountPath: /etc/alloy/
       - name: logstash
@@ -63,7 +63,7 @@ spec:
           - "-f"
           - "/configs/pipeline.conf"
         volumeMounts:
-          - name: aws-logstash-<intergation_id>
+          - name: aws-logstash-new-aws
             readOnly: true
             mountPath: /configs/
         resources:

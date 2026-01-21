@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: loki-gateway-minion
+  namespace: loki
+  annotations:
+    # This identifies this as a Minion
+    nginx.org/mergeable-ingress-type: "minion"
+    # Essential for Loki log streaming/tailing
+    nginx.org/websocket-services: "loki-gateway"
+    nginx.org/proxy-read-timeout: "3600s"
+    nginx.org/proxy-send-timeout: "3600s"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: siem.v2.stg.accuknox.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: loki-gateway # Match your internal service name
+                port:
+                  number: 80

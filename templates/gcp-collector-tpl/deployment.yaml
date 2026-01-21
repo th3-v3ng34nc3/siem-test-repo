@@ -30,6 +30,11 @@ spec:
       - name: alloy
         image: grafana/alloy:v1.12.2
         imagePullPolicy: IfNotPresent
+        args:
+        - run
+        - /etc/alloy/config.alloy
+        - --storage.path=/var/lib/alloy/data
+        - --disable-reporting
         resources:
           limits:
             memory: "128Mi"

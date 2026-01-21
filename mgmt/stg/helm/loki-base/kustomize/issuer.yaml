@@ -19,3 +19,4 @@ spec:
               annotations:
                 nginx.org/mergeable-ingress-type: minion
                 nginx.org/redirect-to-https: "false"
+                #nginx.ingress.kubernetes.io/ssl-redirect: "false"

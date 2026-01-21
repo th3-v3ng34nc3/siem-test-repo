@@ -1,27 +1,27 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: aws-<intergation_id>
-  namespace: tenant-<tenant_id>
+  name: aws-new-aws
+  namespace: tenant-achref
   annotations:
-    tenant: <tenant_id>
-    collector: <intergation_id>
+    tenant: achref
+    collector: new-aws
     type: aws
-    env: <siem_env>
+    env: stg
     kubernetes.io/ingress.class: "nginx"
     nginx.org/mergeable-ingress-type: "minion"
-    nginx.org/rewrites: "serviceName=aws-<intergation_id> rewrite=/loki/api/v1/raw"
+    nginx.org/rewrites: "serviceName=aws-new-aws rewrite=/loki/api/v1/raw"
     nginx.org/auth-type: "basic"
     nginx.org/auth-secret: "htpasswd"
 spec:
   rules:
-    - host: <siem_domain>
+    - host: siem.v2.stg.accuknox.com
       http:
         paths:
-          - path: /<siem_env>/<tenant_id>/<tenant_endpoint>/<intergation_id>/push
+          - path: /stg/achref/6abae3402b4ef2c37a94e0d309b7ed35e233f1e777489e2229c46354/new-aws/push
             pathType: Prefix
             backend:
               service:
-                name: aws-<intergation_id>
+                name: aws-new-aws
                 port:
                   number: 9090
