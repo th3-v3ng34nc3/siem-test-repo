@@ -1,5 +1,5 @@
 
 resources:
 - namespace.yaml
-- tenant-htpasswd.yaml
+- tenant-password.yaml
 - collectors/
