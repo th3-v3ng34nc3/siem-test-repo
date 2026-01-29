@@ -97,3 +97,10 @@ releases:
             if [ "$(kubectl get certificate logs-tls-secret -n nginx-ingress -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')" != "True" ]; then
               kubectl annotate certificate logs-tls-secret cert-manager.io/issue-temporary-certificate="true" --overwrite -n nginx-ingress
             fi
+  - name: prometheus
+    namespace: monitoring
+    chart: prometheus-community/kube-prometheus-stack
+    version: 61.0.0 # Use the latest stable version
+    createNamespace: true
+    values:
+    - prom/values.yaml

@@ -10,7 +10,6 @@ data:
     - alert: Malicious IP Detected
       expr: |
         count_over_time({job!=""} |~ "$BLOCK_LIST" [1m]) > 0
-      for: 30s
       labels:
           severity: critical
       annotations:
@@ -18,7 +17,7 @@ data:
           description: "Malicious IP Detected"
           tenant_id: <tenant_id>
           topic: acculens
-          tool: "{{ .Labels.job }}"
+          tool: {{ .Labels.job }}
 
   threat-intel.sh: |
     #!/bin/bash

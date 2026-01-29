@@ -105,6 +105,7 @@ else
     cp -r "$ENVS_DIR/templates/tenant-tpl"  "$TENANT_TPL"
     yq '.resources |= ( . + ["'$TENANT_ID'"] | unique)' -i "$TENANT_TPL/../kustomization.yaml"
     find "$TENANT_TPL" -type f -exec sed -i '' -e "s#<tenant_id>#$TENANT_ID#g" {} \;
+    find "$TENANT_TPL" -type f -exec sed -i '' -e "s#<env_id>#$ENV_ID#g" {} \;
 fi
 
 echo "Adding tenant to loki for athx & authz"
