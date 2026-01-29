@@ -11,6 +11,9 @@ repositories:
   - name: cert-manager
     url: quay.io/jetstack/charts
     oci: true
+  - name: accuknox-ecr
+    url: public.ecr.aws/k9v9d5v2
+    oci: true
   - name: prometheus-community
     url: https://prometheus-community.github.io/helm-charts
 ---
@@ -70,8 +73,22 @@ releases:
       - grafana/grafana-values.yaml
     needs:
       - loki/loki
+  - name: rules
+    chart: ./rules
+    namespace: siem-mgmt
+    needs:
+    - retreiver/retreiver
+  - name: retreiver
+    chart: accuknox-ecr/retriver
+    version: v1.0.2
+    namespace: retreiver
+    values:
+      - accuknox:
+          token: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzcyMjY3Njc0LCJqdGkiOiI1NWY3YWQxM2ZjM2M0YWNjOWI0NjRlYzRiM2ViNDQwMCIsInRlbmFudC1pZCI6MzczMCwiaXNzIjoiY3NwbS5kZW1vLmFjY3Vrbm94LmNvbSJ9.GAPRuIokXu85kmCGGqmvrlH-1Uxtz1ZIC-2fK4YMFiFSxe-T5q8t0PHwsdW3uCZN19lca_CZbwuqx9UX-NdbtWesRgnlKlTuBsQw2OSh6lYfrgIs-90g1cV6yCL7y2dYMtBURF36x6Up8OrN24uWxU5vqz0WD4js5HX68_iMF14M1FX4KzHnWrakSJWu3eaTI9rZ4R8wg5354ZI2YKxTZKYIm63F_Cj8ZR-P9ubpI3Ew9vbm1elagd6sUP-3a2obwBYRq0-6ReUdKO86i9qi_WGesdJPiz2fliRrN9Pr8f-3MFNy23qqlpIX47PUR5XlS9yIyIeAQ_6qMB0WHgA71g
+          url: https://cwpp.demo.accuknox.com/webhook/alert
   - name: kustomize
     chart: ./kustomize
+    namespace: siem-mgmt
     needs:
      - cert-manager/cert-manager
      - external-secrets/external-secrets

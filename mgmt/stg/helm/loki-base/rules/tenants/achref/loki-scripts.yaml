@@ -2,7 +2,7 @@ kind: ConfigMap
 apiVersion: v1
 metadata:
   name: loki-scripts
-  namespace: tenant-<tenant_id>
+  namespace: tenant-achref
 data:
   threat-intel.rule: |
     name: IP based detection rule
@@ -16,9 +16,9 @@ data:
       annotations:
           summary: "Malicious IP Detected"
           description: "Malicious IP Detected"
-          tenant_id: <tenant_id>
+          tenant_id: achref
           topic: acculens
-          tool: "{{ .Labels.job }}"
+          tool: {{ .Labels.job }}
 
   threat-intel.sh: |
     #!/bin/bash
@@ -46,7 +46,6 @@ data:
       echo "Response was: $RULE_FILE"
       exit 1
     fi
-    popd
 
   update.sh: |
     #!/bin/bash
