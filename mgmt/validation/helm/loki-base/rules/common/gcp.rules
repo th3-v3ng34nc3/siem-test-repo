@@ -1,4 +1,4 @@
-name: Sigma rules
+name: GCP
 rules:
   - alert: Connection_from_non_authorized_geo_location
     annotations:

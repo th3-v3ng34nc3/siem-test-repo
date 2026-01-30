@@ -1,4 +1,4 @@
-name: Sigma rules
+name: AWS
 rules:
   - alert: Account_Enumeration_on_AWS
     annotations:

@@ -1,4 +1,4 @@
-name: Sigma rules
+name: Azure
 rules:
   - alert: Azure_Application_Gateway_Modified_or_Deleted
     annotations:

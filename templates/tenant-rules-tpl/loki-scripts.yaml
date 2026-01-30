@@ -41,6 +41,7 @@ data:
     if [[ "$response" == *'"status":"success"'* ]]; then
       echo "Successfully applied $RULE_FILE"
     else
+      echo "$response"
       echo "ERROR: Loki did not return success for $RULE_FILE"
       echo "Response was: $RULE_FILE"
       exit 1
