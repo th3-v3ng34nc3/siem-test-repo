@@ -5,7 +5,7 @@ rules:
       author: Austin Songer
       description: Identifies when a application gateway is modified or deleted.
       summary: Azure Application Gateway Modified or Deleted
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/APPLICATIONGATEWAYS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/APPLICATIONGATEWAYS/DELETE$` [1m])) or vector(0) > 0
@@ -16,7 +16,7 @@ rules:
       author: Austin Songer
       description: Identifies when a application security group is modified or deleted.
       summary: Azure Application Security Group Modified or Deleted
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/APPLICATIONSECURITYGROUPS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/APPLICATIONSECURITYGROUPS/DELETE$` [1m])) or vector(0) > 0
@@ -27,7 +27,7 @@ rules:
       author: Austin Songer @austinsonger
       description: Detects when a Container Registry is created or deleted.
       summary: Azure Container Registry Created or Deleted
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.CONTAINERREGISTRY/REGISTRIES/WRITE$` or operationName=~`(?i)^MICROSOFT\.CONTAINERREGISTRY/REGISTRIES/DELETE$` [1m])) or vector(0) > 0
@@ -38,7 +38,7 @@ rules:
       author: Austin Songer @austinsonger
       description: Identifies when a device in azure is no longer managed or compliant
       summary: Azure Device No Longer Managed or Compliant
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | properties_message=~`(?i)^Device\ no\ longer\ compliant$` or properties_message=~`(?i)^Device\ no\ longer\ managed$` [1m])) or vector(0) > 0
@@ -49,7 +49,7 @@ rules:
       author: Austin Songer @austinsonger
       description: Identifies when a device or device configuration in azure is modified or deleted.
       summary: Azure Device or Configuration Modified or Deleted
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | properties_message=~`(?i)^Delete\ device$` or properties_message=~`(?i)^Delete\ device\ configuration$` or properties_message=~`(?i)^Update\ device$` or properties_message=~`(?i)^Update\ device\ configuration$` [1m])) or vector(0) > 0
@@ -60,7 +60,7 @@ rules:
       author: Austin Songer @austinsonger
       description: Identifies when DNS zone is modified or deleted.
       summary: Azure DNS Zone Modified or Deleted
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/DNSZONES.*` and (operationName=~`(?i).*/WRITE$` or operationName=~`(?i).*/DELETE$`) [1m])) or vector(0) > 0
@@ -71,7 +71,7 @@ rules:
       author: Austin Songer @austinsonger
       description: Identifies when a firewall is created, modified, or deleted.
       summary: Azure Firewall Modified or Deleted
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/DELETE$` [1m])) or vector(0) > 0
@@ -82,7 +82,7 @@ rules:
       author: Austin Songer @austinsonger
       description: Identifies when Rule Collections (Application, NAT, and Network) is being modified or deleted.
       summary: Azure Firewall Rule Collection Modified or Deleted
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/APPLICATIONRULECOLLECTIONS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/APPLICATIONRULECOLLECTIONS/DELETE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/NATRULECOLLECTIONS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/NATRULECOLLECTIONS/DELETE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/NETWORKRULECOLLECTIONS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/NETWORKRULECOLLECTIONS/DELETE$` [1m])) or vector(0) > 0
@@ -93,7 +93,7 @@ rules:
       author: Austin Songer @austinsonger
       description: Identifies when a Firewall Rule Configuration is Modified or Deleted.
       summary: Azure Firewall Rule Configuration Modified or Deleted
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/RULECOLLECTIONGROUPS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/RULECOLLECTIONGROUPS/DELETE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/RULEGROUPS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/RULEGROUPS/DELETE$` [1m])) or vector(0) > 0
@@ -104,7 +104,7 @@ rules:
       author: Austin Songer @austinsonger
       description: Identifies when a Keyvault Key is modified or deleted in Azure.
       summary: Azure Keyvault Key Modified or Deleted
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/UPDATE/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/CREATE$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/CREATE/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/IMPORT/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/RECOVER/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/RESTORE/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/DELETE$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/BACKUP/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/PURGE/ACTION$` [1m])) or vector(0) > 0
@@ -115,7 +115,7 @@ rules:
       author: Austin Songer @austinsonger
       description: Identifies when secrets are modified or deleted in Azure.
       summary: Azure Keyvault Secrets Modified or Deleted
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/WRITE$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/DELETE$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/BACKUP/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/PURGE/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/UPDATE/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/RECOVER/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/RESTORE/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/SETSECRET/ACTION$` [1m])) or vector(0) > 0
@@ -126,7 +126,7 @@ rules:
       author: Austin Songer @austinsonger
       description: Identifies when a Firewall Policy is Modified or Deleted.
       summary: Azure Network Firewall Policy Modified or Deleted
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/JOIN/ACTION$` or operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/CERTIFICATES/ACTION$` or operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/DELETE$` [1m])) or vector(0) > 0
@@ -137,7 +137,7 @@ rules:
       author: Murtaza Udaipurwala
       description: Detects when an inbound rule is added or modified for a NSG
       summary: Azure Network Security Group Inbound Rule Added or Modified
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i).*WRITE$` and operationName=~`(?i)^MICROSOFT\.NETWORK/NETWORKSECURITYGROUPS.*` [1m])) or vector(0) > 0
@@ -148,7 +148,7 @@ rules:
       author: Austin Songer
       description: Identifies when a new cloudshell is created inside of Azure portal.
       summary: Azure New CloudShell Created
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.PORTAL/CONSOLES/WRITE$` [1m])) or vector(0) > 0
@@ -159,7 +159,7 @@ rules:
       author: Austin Songer @austinsonger
       description: Identifies when a owner is was removed from a application or service principal in Azure.
       summary: Azure Owner Removed From Application or Service Principal
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | properties_message=~`(?i)^Remove\ owner\ from\ service\ principal$` or properties_message=~`(?i)^Remove\ owner\ from\ application$` [1m])) or vector(0) > 0
@@ -170,7 +170,7 @@ rules:
       author: Austin Songer @austinsonger
       description: Identifies when a Point-to-site VPN is Modified or Deleted.
       summary: Azure Point-to-site VPN Modified or Deleted
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/P2SVPNGATEWAYS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/P2SVPNGATEWAYS/DELETE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/P2SVPNGATEWAYS/RESET/ACTION$` or operationName=~`(?i)^MICROSOFT\.NETWORK/P2SVPNGATEWAYS/GENERATEVPNPROFILE/ACTION$` or operationName=~`(?i)^MICROSOFT\.NETWORK/P2SVPNGATEWAYS/DISCONNECTP2SVPNCONNECTIONS/ACTION$` or operationName=~`(?i)^MICROSOFT\.NETWORK/P2SVPNGATEWAYS/PROVIDERS/MICROSOFT\.INSIGHTS/DIAGNOSTICSETTINGS/WRITE$` [1m])) or vector(0) > 0
@@ -181,7 +181,7 @@ rules:
       author: Austin Songer @austinsonger
       description: Identifies when a service principal is created in Azure.
       summary: Azure Service Principal Created
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | properties_message=~`(?i)^Add\ service\ principal$` [1m])) or vector(0) > 0
@@ -192,7 +192,7 @@ rules:
       author: Austin Songer @austinsonger
       description: Identifies when a service principal was removed in Azure.
       summary: Azure Service Principal Removed
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | properties_message=~`(?i)^Remove\ service\ principal$` [1m])) or vector(0) > 0
@@ -202,7 +202,7 @@ rules:
     annotations:
       description: Azure storage configuration updated
       summary: Azure storage configuration updated
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.STORAGE/STORAGEACCOUNTS/BLOBSERVICES/CONTAINERS/WRITE$` and records_resultType=~`(?i)^Success$` [1m])) or vector(0) > 0
@@ -213,7 +213,7 @@ rules:
       author: Austin Songer
       description: Identifies when a suppression rule is created in Azure. Adversary's could attempt this to evade detection.
       summary: Azure Suppression Rule Created
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.SECURITY/ALERTSSUPPRESSIONRULES/WRITE$` [1m])) or vector(0) > 0
@@ -223,7 +223,7 @@ rules:
     annotations:
       description: Azure vm created
       summary: Azure vm created
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.COMPUTE/VIRTUALMACHINES.*` and operationName=~`(?i).*/WRITE$` and resultType=~`(?i)^Success$` [1m])) or vector(0) > 0
@@ -234,7 +234,7 @@ rules:
       author: Austin Songer @austinsonger
       description: Identifies when a VPN connection is modified or deleted.
       summary: Azure VPN Connection Modified or Deleted
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/VPNGATEWAYS/VPNCONNECTIONS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/VPNGATEWAYS/VPNCONNECTIONS/DELETE$` [1m])) or vector(0) > 0
@@ -245,7 +245,7 @@ rules:
       author: sawwinnnaung
       description: Identifies IPs from which users grant access to other users on azure resources and alerts when a previously unseen source IP address is used.
       summary: Granting Of Permissions To An Account
-      tenant_id: <tenant_id>
+      tenant: <tenant_id>
       topic: acculens
       tool: azurelog
     expr: sum(count_over_time({job="azurelog"} |~ `(?i)Microsoft\.Authorization/roleAssignments/write` [1m])) or vector(0) > 0

@@ -7,7 +7,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | country_iso_code=~`(?i).*IN.*` or continent_code=~`(?i).*AS.*` or continent_code=~`(?i).*ASA.*` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | country_iso_code=~`(?i).*IN.*` or continent_code=~`(?i).*AS.*` or continent_code=~`(?i).*ASA.*` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: GCP_bucket_configuration_updated
@@ -17,7 +17,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | methodName=~`(?i)^storage\.buckets\.update$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | methodName=~`(?i)^storage\.buckets\.update$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: GCP_Firewall_Rule_Created_or_Policy_Rule_Added
@@ -28,7 +28,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | (protoPayload_methodName=~`(?i)^beta\.compute\.firewalls\.insert$` or protoPayload_methodName=~`(?i)^v1\.compute\.firewalls\.patch$` or protoPayload_methodName=~`(?i)^beta\.compute\.networkFirewallPolicies\.addRule$` or protoPayload_methodName=~`(?i)^beta\.compute\.networkFirewallPolicies\.patchRule$`) and resource_type=~`(?i)^gce_firewall_rule$` and operation_first=~`(?i)^true$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | (protoPayload_methodName=~`(?i)^beta\.compute\.firewalls\.insert$` or protoPayload_methodName=~`(?i)^v1\.compute\.firewalls\.patch$` or protoPayload_methodName=~`(?i)^beta\.compute\.networkFirewallPolicies\.addRule$` or protoPayload_methodName=~`(?i)^beta\.compute\.networkFirewallPolicies\.patchRule$`) and resource_type=~`(?i)^gce_firewall_rule$` and operation_first=~`(?i)^true$` [1m])) or vector(0) > 0
     labels:
       severity: high
   - alert: GCP_User_Granted_Admin_Role
@@ -39,7 +39,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | (protoPayload_methodName=~`(?i)^SetIamPolicy$` or protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.SetIamPolicy$` or protoPayload_methodName=~`(?i)^google\.cloud\.resourcemanager\.v1\.SetIamPolicy$`) and protoPayload_serviceData_policyDelta_bindingDeltas_action=~`(?i)^ADD$` and protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i)^roles/owner$` or (protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateServiceAccount$` or protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateUser$`) and protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i)^roles/owner$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | (protoPayload_methodName=~`(?i)^SetIamPolicy$` or protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.SetIamPolicy$` or protoPayload_methodName=~`(?i)^google\.cloud\.resourcemanager\.v1\.SetIamPolicy$`) and protoPayload_serviceData_policyDelta_bindingDeltas_action=~`(?i)^ADD$` and protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i)^roles/owner$` or (protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateServiceAccount$` or protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateUser$`) and protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i)^roles/owner$` [1m])) or vector(0) > 0
     labels:
       severity: high
   - alert: gcp_vm_created
@@ -49,7 +49,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | protoPayload_methodName=~`(?i)^beta\.compute\.instances\.insert$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | protoPayload_methodName=~`(?i)^beta\.compute\.instances\.insert$` [1m])) or vector(0) > 0
     labels:
       severity: low
   - alert: GCP_VPC_Network_Deletion
@@ -60,7 +60,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | protoPayload_methodName=~`(?i)^v1\.compute\.networks\.delete$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | protoPayload_methodName=~`(?i)^v1\.compute\.networks\.delete$` [1m])) or vector(0) > 0
     labels:
       severity: high
   - alert: GCP_VPC_Route_Created
@@ -71,7 +71,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | protoPayload_methodName=~`(?i)^v1\.compute\.routes\.insert$` and resource_type=~`(?i)^gce_route$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | protoPayload_methodName=~`(?i)^v1\.compute\.routes\.insert$` and resource_type=~`(?i)^gce_route$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: GCP_VPC_Route_Deleted
@@ -82,7 +82,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | protoPayload_methodName=~`(?i)^v1\.compute\.routes\.delete$` and resource_type=~`(?i)^gce_route$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | protoPayload_methodName=~`(?i)^v1\.compute\.routes\.delete$` and resource_type=~`(?i)^gce_route$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: Google_Cloud_IAM_Custom_Role_Created
@@ -93,7 +93,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateRole$` or gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.UndeleteRole$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateRole$` or gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.UndeleteRole$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: Google_Cloud_IAM_Custom_Role_Deleted
@@ -104,7 +104,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.DeleteRole$` and gcp_audit_protoPayload_response_deleted=~`(?i)^true$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.DeleteRole$` and gcp_audit_protoPayload_response_deleted=~`(?i)^true$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: Google_Cloud_IAM_Member_Assigned_Owner_OR_Admin_Role
@@ -115,7 +115,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_action=~`(?i)^ADD$` and gcp_audit_protoPayload_methodName=~`(?i)^SetIamPolicy$` and (gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/resourcemanager\.organizationAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/resourcemanager\.projectIamAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/accesscontextmanager\.policyAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/axt\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/actions\.Admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/serviceconsumermanagement\.tenancyUnitsAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/advisorynotifications\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/recommender\.alloydbAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.listingAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/gkemulticloud\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.jobOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.modelOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.operationOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.subscriptionOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/bigquery\.dataOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/certificatemanager\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/chat\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudasset\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudbuild\.integrationsOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudbuild\.workerPoolOwner.*`) [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_action=~`(?i)^ADD$` and gcp_audit_protoPayload_methodName=~`(?i)^SetIamPolicy$` and (gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/resourcemanager\.organizationAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/resourcemanager\.projectIamAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/accesscontextmanager\.policyAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/axt\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/actions\.Admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/serviceconsumermanagement\.tenancyUnitsAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/advisorynotifications\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/recommender\.alloydbAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.listingAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/gkemulticloud\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.jobOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.modelOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.operationOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.subscriptionOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/bigquery\.dataOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/certificatemanager\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/chat\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudasset\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudbuild\.integrationsOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudbuild\.workerPoolOwner.*`) [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: Google_Cloud_Logging_Bucket_Created
@@ -126,7 +126,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.CreateBucket$` or gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UndeleteBucket$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.CreateBucket$` or gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UndeleteBucket$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: Google_Cloud_Logging_Bucket_Deleted
@@ -137,7 +137,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.DeleteBucket$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.DeleteBucket$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: Google_Cloud_Logging_Bucket_Modified
@@ -148,7 +148,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UpdateBucket$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UpdateBucket$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: Google_Cloud_Logging_Sink_Deleted
@@ -159,7 +159,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.DeleteSink$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.DeleteSink$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: Google_Cloud_Logging_Sink_Updated
@@ -170,7 +170,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UpdateSink$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UpdateSink$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: Google_Cloud_Service_Account_Key_Created
@@ -181,7 +181,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateServiceAccountKey$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateServiceAccountKey$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: Google_Cloud_Service_Account_Key_Deleted
@@ -192,7 +192,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.DeleteServiceAccountKey$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.DeleteServiceAccountKey$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: Google_Cloud_Storage_Bucket_s_IAM_Permissions_Modified
@@ -203,7 +203,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^storage\.setIamPermissions$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | gcp_audit_protoPayload_methodName=~`(?i)^storage\.setIamPermissions$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: Google_Cloud_Storage_Buckets_Created
@@ -214,7 +214,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | gcp_audit_method_name=~`(?i)^storage\.buckets\.insert$` or gcp_audit_method_name=~`(?i)^storage\.buckets\.create$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | gcp_audit_method_name=~`(?i)^storage\.buckets\.insert$` or gcp_audit_method_name=~`(?i)^storage\.buckets\.create$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: Google_Cloud_Storage_Buckets_Deleted
@@ -225,7 +225,7 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | gcp_audit_method_name=~`(?i)^storage\.buckets\.delete$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | gcp_audit_method_name=~`(?i)^storage\.buckets\.delete$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: Google_Cloud_Storage_Buckets_Modified_or_Deleted
@@ -236,6 +236,6 @@ rules:
       tenant_id: '<tenant_id>'
       topic: acculens
       tool: gcplog
-    expr: sum(count_over_time({job=~".+"} | logfmt | gcp_audit_method_name=~`(?i)^storage\.buckets\.insert$` or gcp_audit_method_name=~`(?i)^storage\.buckets\.create$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job=~".+"} | json | gcp_audit_method_name=~`(?i)^storage\.buckets\.insert$` or gcp_audit_method_name=~`(?i)^storage\.buckets\.create$` [1m])) or vector(0) > 0
     labels:
       severity: medium

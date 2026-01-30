@@ -42,7 +42,7 @@ data:
       fi
     done
     envsubst <  /retreiver-cm-template/loki-rules.yaml > $TMP_FILE
-    CMD='.data."foobar" = load_str("'"$TMP_FILE"'")'
+    CMD='.data."loki-rules.yaml" = load_str("'"$TMP_FILE"'")'
     echo "data: " | yq "$CMD" > /tmp/patch.yaml
     kubectl patch cm retriver-cm -n retreiver --patch-file /tmp/patch.yaml
     kubectl rollout restart deployment/retreiver-retriver -n retreiver

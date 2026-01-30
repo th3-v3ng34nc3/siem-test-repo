@@ -11,7 +11,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventName=~`(?i)^list.*` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i)^list.*` [1m])) or vector(0) > 0
         labels:
           severity: low
       - alert: AWS_Attached_Malicious_Lambda_Layer
@@ -26,7 +26,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^UpdateFunctionConfiguration.*` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^UpdateFunctionConfiguration.*` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: AWS_CloudTrail_Important_Change
@@ -37,7 +37,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^cloudtrail\.amazonaws\.com$` and (eventName=~`(?i)^StopLogging$` or eventName=~`(?i)^UpdateTrail$` or eventName=~`(?i)^DeleteTrail$`) [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^cloudtrail\.amazonaws\.com$` and (eventName=~`(?i)^StopLogging$` or eventName=~`(?i)^UpdateTrail$` or eventName=~`(?i)^DeleteTrail$`) [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: AWS_Config_Disabling_Channel_Recorder
@@ -48,7 +48,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^config\.amazonaws\.com$` and (eventName=~`(?i)^DeleteDeliveryChannel$` or eventName=~`(?i)^StopConfigurationRecorder$`) [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^config\.amazonaws\.com$` and (eventName=~`(?i)^DeleteDeliveryChannel$` or eventName=~`(?i)^StopConfigurationRecorder$`) [1m])) or vector(0) > 0
         labels:
           severity: high
       - alert: AWS_Console_GetSigninToken_Potential_Abuse
@@ -63,7 +63,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^signin\.amazonaws\.com$` and eventName=~`(?i)^GetSigninToken$` and userAgent!~`(?i).*Jersey/\$\{project\.version\}.*` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^signin\.amazonaws\.com$` and eventName=~`(?i)^GetSigninToken$` and userAgent!~`(?i).*Jersey/\$\{project\.version\}.*` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: AWS_Create_Load_Balancer
@@ -74,7 +74,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^elasticloadbalancing\.amazonaws\.com$` and eventName=~`(?i)^CreateLoadBalancer.*` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^elasticloadbalancing\.amazonaws\.com$` and eventName=~`(?i)^CreateLoadBalancer.*` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: AWS_EC2_Disable_EBS_Encryption
@@ -89,7 +89,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^ec2\.amazonaws\.com$` and eventName=~`(?i)^DisableEbsEncryptionByDefault$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and eventName=~`(?i)^DisableEbsEncryptionByDefault$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: AWS_EC2_Download_Userdata
@@ -100,7 +100,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^ec2\.amazonaws\.com$` and requestParameters_attribute=~`(?i)^userData$` and eventName=~`(?i)^DescribeInstanceAttribute$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and requestParameters_attribute=~`(?i)^userData$` and eventName=~`(?i)^DescribeInstanceAttribute$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: AWS_EC2_Startup_Shell_Script_Change
@@ -111,7 +111,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^ec2\.amazonaws\.com$` and requestParameters_attribute=~`(?i)^userData$` and eventName=~`(?i)^ModifyInstanceAttribute$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and requestParameters_attribute=~`(?i)^userData$` and eventName=~`(?i)^ModifyInstanceAttribute$` [1m])) or vector(0) > 0
         labels:
           severity: high
       - alert: AWS_EC2_VM_Export_Failure
@@ -122,7 +122,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventName=~`(?i)^CreateInstanceExportTask$` and eventSource=~`(?i)^ec2\.amazonaws\.com$` and errorMessage!~`(?i).*` and errorCode!~`(?i).*` and responseElements!~`(?i).*Failure.*` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i)^CreateInstanceExportTask$` and eventSource=~`(?i)^ec2\.amazonaws\.com$` and errorMessage!~`(?i).*` and errorCode!~`(?i).*` and responseElements!~`(?i).*Failure.*` [1m])) or vector(0) > 0
         labels:
           severity: low
       - alert: AWS_ECS_Backdoor_Task_Definition
@@ -133,7 +133,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^ecs\.amazonaws\.com$` and (eventName=~`(?i)^DescribeTaskDefinition$` or eventName=~`(?i)^RegisterTaskDefinition$` or eventName=~`(?i)^RunTask$`) and requestParameters_containerDefinitions_command=~`(?i).*169\.254.*` and requestParameters_containerDefinitions_command=~`(?i).*\$AWS_CONTAINER_CREDENTIALS.*` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ecs\.amazonaws\.com$` and (eventName=~`(?i)^DescribeTaskDefinition$` or eventName=~`(?i)^RegisterTaskDefinition$` or eventName=~`(?i)^RunTask$`) and requestParameters_containerDefinitions_command=~`(?i).*169\.254.*` and requestParameters_containerDefinitions_command=~`(?i).*\$AWS_CONTAINER_CREDENTIALS.*` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: AWS_EFS_Fileshare_Modified_or_Deleted
@@ -150,7 +150,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^elasticfilesystem\.amazonaws\.com$` and eventName=~`(?i)^DeleteFileSystem$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^elasticfilesystem\.amazonaws\.com$` and eventName=~`(?i)^DeleteFileSystem$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: AWS_EFS_Fileshare_Mount_Modified_or_Deleted
@@ -161,7 +161,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^elasticfilesystem\.amazonaws\.com$` and eventName=~`(?i)^DeleteMountTarget$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^elasticfilesystem\.amazonaws\.com$` and eventName=~`(?i)^DeleteMountTarget$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: AWS_EKS_Cluster_Created_or_Deleted
@@ -172,7 +172,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^eks\.amazonaws\.com$` and (eventName=~`(?i)^CreateCluster$` or eventName=~`(?i)^DeleteCluster$`) [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^eks\.amazonaws\.com$` and (eventName=~`(?i)^CreateCluster$` or eventName=~`(?i)^DeleteCluster$`) [1m])) or vector(0) > 0
         labels:
           severity: low
       - alert: AWS_ElastiCache_Security_Group_Created
@@ -183,7 +183,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^elasticache\.amazonaws\.com$` and eventName=~`(?i)^CreateCacheSecurityGroup$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^elasticache\.amazonaws\.com$` and eventName=~`(?i)^CreateCacheSecurityGroup$` [1m])) or vector(0) > 0
         labels:
           severity: low
       - alert: AWS_ElastiCache_Security_Group_Modified_or_Deleted
@@ -194,7 +194,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^elasticache\.amazonaws\.com$` and (eventName=~`(?i)^DeleteCacheSecurityGroup$` or eventName=~`(?i)^AuthorizeCacheSecurityGroupIngress$` or eventName=~`(?i)^RevokeCacheSecurityGroupIngress$` or eventName=~`(?i)^AuthorizeCacheSecurityGroupEgress$` or eventName=~`(?i)^RevokeCacheSecurityGroupEgress$`) [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^elasticache\.amazonaws\.com$` and (eventName=~`(?i)^DeleteCacheSecurityGroup$` or eventName=~`(?i)^AuthorizeCacheSecurityGroupIngress$` or eventName=~`(?i)^RevokeCacheSecurityGroupIngress$` or eventName=~`(?i)^AuthorizeCacheSecurityGroupEgress$` or eventName=~`(?i)^RevokeCacheSecurityGroupEgress$`) [1m])) or vector(0) > 0
         labels:
           severity: low
       - alert: AWS_Glue_Development_Endpoint_Activity
@@ -205,7 +205,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^glue\.amazonaws\.com$` and (eventName=~`(?i)^CreateDevEndpoint$` or eventName=~`(?i)^DeleteDevEndpoint$` or eventName=~`(?i)^UpdateDevEndpoint$`) [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^glue\.amazonaws\.com$` and (eventName=~`(?i)^CreateDevEndpoint$` or eventName=~`(?i)^DeleteDevEndpoint$` or eventName=~`(?i)^UpdateDevEndpoint$`) [1m])) or vector(0) > 0
         labels:
           severity: low
       - alert: AWS_GuardDuty_Important_Change
@@ -216,7 +216,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^guardduty\.amazonaws\.com$` and eventName=~`(?i)^CreateIPSet$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^guardduty\.amazonaws\.com$` and eventName=~`(?i)^CreateIPSet$` [1m])) or vector(0) > 0
         labels:
           severity: high
       - alert: AWS_IAM_Backdoor_Users_Keys
@@ -233,7 +233,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^CreateAccessKey$` and userIdentity_arn!~`(?i).*responseElements\.accessKey\.userName.*` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^CreateAccessKey$` and userIdentity_arn!~`(?i).*responseElements\.accessKey\.userName.*` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: AWS_IAM_S3Browser_LoginProfile_Creation
@@ -244,7 +244,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^iam\.amazonaws\.com$` and (eventName=~`(?i)^GetLoginProfile$` or eventName=~`(?i)^CreateLoginProfile$`) and userAgent=~`(?i).*S3\ Browser.*` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and (eventName=~`(?i)^GetLoginProfile$` or eventName=~`(?i)^CreateLoginProfile$`) and userAgent=~`(?i).*S3\ Browser.*` [1m])) or vector(0) > 0
         labels:
           severity: high
       - alert: AWS_IAM_S3Browser_Templated_S3_Bucket_Policy_Creation
@@ -255,7 +255,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^PutUserPolicy$` and userAgent=~`(?i).*S3\ Browser.*` and requestParameters=~`(?i).*"arn:aws:s3:::<YOUR\-BUCKET\-NAME>/.*".*` and requestParameters=~`(?i).*"s3:GetObject".*` and requestParameters=~`(?i).*"Allow".*` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^PutUserPolicy$` and userAgent=~`(?i).*S3\ Browser.*` and requestParameters=~`(?i).*"arn:aws:s3:::<YOUR\-BUCKET\-NAME>/.*".*` and requestParameters=~`(?i).*"s3:GetObject".*` and requestParameters=~`(?i).*"Allow".*` [1m])) or vector(0) > 0
         labels:
           severity: high
       - alert: AWS_IAM_S3Browser_User_or_AccessKey_Creation
@@ -266,7 +266,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^iam\.amazonaws\.com$` and (eventName=~`(?i)^CreateUser$` or eventName=~`(?i)^CreateAccessKey$`) and userAgent=~`(?i).*S3\ Browser.*` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and (eventName=~`(?i)^CreateUser$` or eventName=~`(?i)^CreateAccessKey$`) and userAgent=~`(?i).*S3\ Browser.*` [1m])) or vector(0) > 0
         labels:
           severity: high
       - alert: AWS_Identity_Center_Identity_Provider_Change
@@ -281,7 +281,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | (eventSource=~`(?i)^sso\-directory\.amazonaws\.com$` or eventSource=~`(?i)^sso\.amazonaws\.com$`) and (eventName=~`(?i)^AssociateDirectory$` or eventName=~`(?i)^DisableExternalIdPConfigurationForDirectory$` or eventName=~`(?i)^DisassociateDirectory$` or eventName=~`(?i)^EnableExternalIdPConfigurationForDirectory$`) [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | (eventSource=~`(?i)^sso\-directory\.amazonaws\.com$` or eventSource=~`(?i)^sso\.amazonaws\.com$`) and (eventName=~`(?i)^AssociateDirectory$` or eventName=~`(?i)^DisableExternalIdPConfigurationForDirectory$` or eventName=~`(?i)^DisassociateDirectory$` or eventName=~`(?i)^EnableExternalIdPConfigurationForDirectory$`) [1m])) or vector(0) > 0
         labels:
           severity: high
       - alert: AWS_Lambda_Function_Created_or_Invoked
@@ -292,7 +292,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^CreateFunction$` or eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^Invoke$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^CreateFunction$` or eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^Invoke$` [1m])) or vector(0) > 0
         labels:
           severity: low
       - alert: AWS_Macie_Evasion
@@ -303,7 +303,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventName=~`(?i)^ArchiveFindings$` or eventName=~`(?i)^CreateFindingsFilter$` or eventName=~`(?i)^DeleteMember$` or eventName=~`(?i)^DisassociateFromMasterAccount$` or eventName=~`(?i)^DisassociateMember$` or eventName=~`(?i)^DisableMacie$` or eventName=~`(?i)^DisableOrganizationAdminAccount$` or eventName=~`(?i)^UpdateFindingsFilter$` or eventName=~`(?i)^UpdateMacieSession$` or eventName=~`(?i)^UpdateMemberSession$` or eventName=~`(?i)^UpdateClassificationJob$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i)^ArchiveFindings$` or eventName=~`(?i)^CreateFindingsFilter$` or eventName=~`(?i)^DeleteMember$` or eventName=~`(?i)^DisassociateFromMasterAccount$` or eventName=~`(?i)^DisassociateMember$` or eventName=~`(?i)^DisableMacie$` or eventName=~`(?i)^DisableOrganizationAdminAccount$` or eventName=~`(?i)^UpdateFindingsFilter$` or eventName=~`(?i)^UpdateMacieSession$` or eventName=~`(?i)^UpdateMemberSession$` or eventName=~`(?i)^UpdateClassificationJob$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: AWS_RDS_Master_Password_Change
@@ -314,7 +314,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^rds\.amazonaws\.com$` and responseElements_pendingModifiedValues_masterUserPassword=~`(?i).*` and eventName=~`(?i)^ModifyDBInstance$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^rds\.amazonaws\.com$` and responseElements_pendingModifiedValues_masterUserPassword=~`(?i).*` and eventName=~`(?i)^ModifyDBInstance$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: AWS_Root_Credentials
@@ -325,7 +325,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | userIdentity_type=~`(?i)^Root$` and eventType!~`(?i)^AwsServiceEvent$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | userIdentity_type=~`(?i)^Root$` and eventType!~`(?i)^AwsServiceEvent$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: AWS_Route_53_Domain_Transfer_Lock_Disabled
@@ -336,7 +336,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^route53\.amazonaws\.com$` and eventName=~`(?i)^DisableDomainTransferLock$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^route53\.amazonaws\.com$` and eventName=~`(?i)^DisableDomainTransferLock$` [1m])) or vector(0) > 0
         labels:
           severity: low
       - alert: AWS_Route_53_Domain_Transferred_to_Another_Account
@@ -347,7 +347,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^route53\.amazonaws\.com$` and eventName=~`(?i)^TransferDomainToAnotherAwsAccount$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^route53\.amazonaws\.com$` and eventName=~`(?i)^TransferDomainToAnotherAwsAccount$` [1m])) or vector(0) > 0
         labels:
           severity: low
       - alert: AWS_S3_Bucket_Versioning_Disable
@@ -358,7 +358,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^PutBucketVersioning$` and requestParameters=~`(?i).*Suspended.*` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^PutBucketVersioning$` and requestParameters=~`(?i).*Suspended.*` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: AWS_S3_Bucket_Versioning
@@ -369,7 +369,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^PutBucketVersioning$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^PutBucketVersioning$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: AWS_S3_made_public
@@ -379,7 +379,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventName=~`(?i).*PutBucketPublicAccessBlock.*` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i).*PutBucketPublicAccessBlock.*` [1m])) or vector(0) > 0
         labels:
           severity: high
       - alert: AWS_Security_Group_Port_Opened
@@ -390,7 +390,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^ec2\.amazonaws\.com$` and (eventName=~`(?i)^AuthorizeSecurityGroupIngress$` or eventName=~`(?i)^ModifySecurityGroupRules$`) [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and (eventName=~`(?i)^AuthorizeSecurityGroupIngress$` or eventName=~`(?i)^ModifySecurityGroupRules$`) [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: AWS_SecurityHub_Findings_Evasion
@@ -401,7 +401,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^securityhub\.amazonaws\.com$` and (eventName=~`(?i)^BatchUpdateFindings$` or eventName=~`(?i)^DeleteInsight$` or eventName=~`(?i)^UpdateFindings$` or eventName=~`(?i)^UpdateInsight$`) [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^securityhub\.amazonaws\.com$` and (eventName=~`(?i)^BatchUpdateFindings$` or eventName=~`(?i)^DeleteInsight$` or eventName=~`(?i)^UpdateFindings$` or eventName=~`(?i)^UpdateInsight$`) [1m])) or vector(0) > 0
         labels:
           severity: high
       - alert: AWS_Snapshot_Backup_Exfiltration
@@ -412,7 +412,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^ec2\.amazonaws\.com$` and eventName=~`(?i)^ModifySnapshotAttribute$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and eventName=~`(?i)^ModifySnapshotAttribute$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: AWS_STS_GetSessionToken_Misuse
@@ -423,7 +423,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^sts\.amazonaws\.com$` and eventName=~`(?i)^GetSessionToken$` and userIdentity_type=~`(?i)^IAMUser$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^sts\.amazonaws\.com$` and eventName=~`(?i)^GetSessionToken$` and userIdentity_type=~`(?i)^IAMUser$` [1m])) or vector(0) > 0
         labels:
           severity: low
       - alert: AWS_Suspicious_SAML_Activity
@@ -434,7 +434,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^sts\.amazonaws\.com$` and eventName=~`(?i)^AssumeRoleWithSAML$` or eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^UpdateSAMLProvider$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^sts\.amazonaws\.com$` and eventName=~`(?i)^AssumeRoleWithSAML$` or eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^UpdateSAMLProvider$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: AWS_User_Login_Profile_Was_Modified
@@ -449,7 +449,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^UpdateLoginProfile$` and userIdentity_arn!~`(?i).*requestParameters\.userName.*` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^UpdateLoginProfile$` and userIdentity_arn!~`(?i).*requestParameters\.userName.*` [1m])) or vector(0) > 0
         labels:
           severity: high
       - alert: AWS_vm_created
@@ -459,7 +459,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventName=~`(?i)^RunInstances$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i)^RunInstances$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: Potential_Bucket_Enumeration_on_AWS
@@ -470,7 +470,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^ListBuckets$` and type!~`(?i)^AssumedRole$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^ListBuckets$` and type!~`(?i)^AssumedRole$` [1m])) or vector(0) > 0
         labels:
           severity: low
       - alert: Restore_Public_AWS_RDS_Instance
@@ -481,7 +481,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^rds\.amazonaws\.com$` and responseElements_publiclyAccessible=~`(?i)^true$` and eventName=~`(?i)^RestoreDBInstanceFromDBSnapshot$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^rds\.amazonaws\.com$` and responseElements_publiclyAccessible=~`(?i)^true$` and eventName=~`(?i)^RestoreDBInstanceFromDBSnapshot$` [1m])) or vector(0) > 0
         labels:
           severity: high
       - alert: SES_Identity_Has_Been_Deleted
@@ -492,7 +492,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^ses\.amazonaws\.com$` and eventName=~`(?i)^DeleteIdentity$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ses\.amazonaws\.com$` and eventName=~`(?i)^DeleteIdentity$` [1m])) or vector(0) > 0
         labels:
           severity: medium
   azure.rules: |
@@ -759,7 +759,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | country_iso_code=~`(?i).*IN.*` or continent_code=~`(?i).*AS.*` or continent_code=~`(?i).*ASA.*` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | country_iso_code=~`(?i).*IN.*` or continent_code=~`(?i).*AS.*` or continent_code=~`(?i).*ASA.*` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: GCP_bucket_configuration_updated
@@ -769,7 +769,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | methodName=~`(?i)^storage\.buckets\.update$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | methodName=~`(?i)^storage\.buckets\.update$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: GCP_Firewall_Rule_Created_or_Policy_Rule_Added
@@ -780,7 +780,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | (protoPayload_methodName=~`(?i)^beta\.compute\.firewalls\.insert$` or protoPayload_methodName=~`(?i)^v1\.compute\.firewalls\.patch$` or protoPayload_methodName=~`(?i)^beta\.compute\.networkFirewallPolicies\.addRule$` or protoPayload_methodName=~`(?i)^beta\.compute\.networkFirewallPolicies\.patchRule$`) and resource_type=~`(?i)^gce_firewall_rule$` and operation_first=~`(?i)^true$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | (protoPayload_methodName=~`(?i)^beta\.compute\.firewalls\.insert$` or protoPayload_methodName=~`(?i)^v1\.compute\.firewalls\.patch$` or protoPayload_methodName=~`(?i)^beta\.compute\.networkFirewallPolicies\.addRule$` or protoPayload_methodName=~`(?i)^beta\.compute\.networkFirewallPolicies\.patchRule$`) and resource_type=~`(?i)^gce_firewall_rule$` and operation_first=~`(?i)^true$` [1m])) or vector(0) > 0
         labels:
           severity: high
       - alert: GCP_User_Granted_Admin_Role
@@ -791,7 +791,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | (protoPayload_methodName=~`(?i)^SetIamPolicy$` or protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.SetIamPolicy$` or protoPayload_methodName=~`(?i)^google\.cloud\.resourcemanager\.v1\.SetIamPolicy$`) and protoPayload_serviceData_policyDelta_bindingDeltas_action=~`(?i)^ADD$` and protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i)^roles/owner$` or (protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateServiceAccount$` or protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateUser$`) and protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i)^roles/owner$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | (protoPayload_methodName=~`(?i)^SetIamPolicy$` or protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.SetIamPolicy$` or protoPayload_methodName=~`(?i)^google\.cloud\.resourcemanager\.v1\.SetIamPolicy$`) and protoPayload_serviceData_policyDelta_bindingDeltas_action=~`(?i)^ADD$` and protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i)^roles/owner$` or (protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateServiceAccount$` or protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateUser$`) and protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i)^roles/owner$` [1m])) or vector(0) > 0
         labels:
           severity: high
       - alert: gcp_vm_created
@@ -801,7 +801,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | protoPayload_methodName=~`(?i)^beta\.compute\.instances\.insert$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | protoPayload_methodName=~`(?i)^beta\.compute\.instances\.insert$` [1m])) or vector(0) > 0
         labels:
           severity: low
       - alert: GCP_VPC_Network_Deletion
@@ -812,7 +812,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | protoPayload_methodName=~`(?i)^v1\.compute\.networks\.delete$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | protoPayload_methodName=~`(?i)^v1\.compute\.networks\.delete$` [1m])) or vector(0) > 0
         labels:
           severity: high
       - alert: GCP_VPC_Route_Created
@@ -823,7 +823,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | protoPayload_methodName=~`(?i)^v1\.compute\.routes\.insert$` and resource_type=~`(?i)^gce_route$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | protoPayload_methodName=~`(?i)^v1\.compute\.routes\.insert$` and resource_type=~`(?i)^gce_route$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: GCP_VPC_Route_Deleted
@@ -834,7 +834,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | protoPayload_methodName=~`(?i)^v1\.compute\.routes\.delete$` and resource_type=~`(?i)^gce_route$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | protoPayload_methodName=~`(?i)^v1\.compute\.routes\.delete$` and resource_type=~`(?i)^gce_route$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: Google_Cloud_IAM_Custom_Role_Created
@@ -845,7 +845,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateRole$` or gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.UndeleteRole$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateRole$` or gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.UndeleteRole$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: Google_Cloud_IAM_Custom_Role_Deleted
@@ -856,7 +856,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.DeleteRole$` and gcp_audit_protoPayload_response_deleted=~`(?i)^true$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.DeleteRole$` and gcp_audit_protoPayload_response_deleted=~`(?i)^true$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: Google_Cloud_IAM_Member_Assigned_Owner_OR_Admin_Role
@@ -867,7 +867,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_action=~`(?i)^ADD$` and gcp_audit_protoPayload_methodName=~`(?i)^SetIamPolicy$` and (gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/resourcemanager\.organizationAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/resourcemanager\.projectIamAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/accesscontextmanager\.policyAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/axt\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/actions\.Admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/serviceconsumermanagement\.tenancyUnitsAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/advisorynotifications\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/recommender\.alloydbAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.listingAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/gkemulticloud\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.jobOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.modelOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.operationOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.subscriptionOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/bigquery\.dataOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/certificatemanager\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/chat\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudasset\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudbuild\.integrationsOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudbuild\.workerPoolOwner.*`) [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_action=~`(?i)^ADD$` and gcp_audit_protoPayload_methodName=~`(?i)^SetIamPolicy$` and (gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/resourcemanager\.organizationAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/resourcemanager\.projectIamAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/accesscontextmanager\.policyAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/axt\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/actions\.Admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/serviceconsumermanagement\.tenancyUnitsAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/advisorynotifications\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/recommender\.alloydbAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.listingAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/gkemulticloud\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.jobOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.modelOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.operationOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.subscriptionOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/bigquery\.dataOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/certificatemanager\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/chat\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudasset\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudbuild\.integrationsOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudbuild\.workerPoolOwner.*`) [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: Google_Cloud_Logging_Bucket_Created
@@ -878,7 +878,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.CreateBucket$` or gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UndeleteBucket$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.CreateBucket$` or gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UndeleteBucket$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: Google_Cloud_Logging_Bucket_Deleted
@@ -889,7 +889,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.DeleteBucket$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.DeleteBucket$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: Google_Cloud_Logging_Bucket_Modified
@@ -900,7 +900,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UpdateBucket$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UpdateBucket$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: Google_Cloud_Logging_Sink_Deleted
@@ -911,7 +911,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.DeleteSink$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.DeleteSink$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: Google_Cloud_Logging_Sink_Updated
@@ -922,7 +922,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UpdateSink$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UpdateSink$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: Google_Cloud_Service_Account_Key_Created
@@ -933,7 +933,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateServiceAccountKey$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateServiceAccountKey$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: Google_Cloud_Service_Account_Key_Deleted
@@ -944,7 +944,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.DeleteServiceAccountKey$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.DeleteServiceAccountKey$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: Google_Cloud_Storage_Bucket_s_IAM_Permissions_Modified
@@ -955,7 +955,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^storage\.setIamPermissions$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^storage\.setIamPermissions$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: Google_Cloud_Storage_Buckets_Created
@@ -966,7 +966,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_method_name=~`(?i)^storage\.buckets\.insert$` or gcp_audit_method_name=~`(?i)^storage\.buckets\.create$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_method_name=~`(?i)^storage\.buckets\.insert$` or gcp_audit_method_name=~`(?i)^storage\.buckets\.create$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: Google_Cloud_Storage_Buckets_Deleted
@@ -977,7 +977,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_method_name=~`(?i)^storage\.buckets\.delete$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_method_name=~`(?i)^storage\.buckets\.delete$` [1m])) or vector(0) > 0
         labels:
           severity: medium
       - alert: Google_Cloud_Storage_Buckets_Modified_or_Deleted
@@ -988,7 +988,7 @@ data:
           tenant_id: threat-intel
           topic: acculens
           tool: gcplog
-        expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_method_name=~`(?i)^storage\.buckets\.insert$` or gcp_audit_method_name=~`(?i)^storage\.buckets\.create$` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_method_name=~`(?i)^storage\.buckets\.insert$` or gcp_audit_method_name=~`(?i)^storage\.buckets\.create$` [1m])) or vector(0) > 0
         labels:
           severity: medium
 kind: ConfigMap

@@ -8,7 +8,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventName=~`(?i)^list.*` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i)^list.*` [1m])) or vector(0) > 0
     labels:
       severity: low
   - alert: AWS_Attached_Malicious_Lambda_Layer
@@ -23,7 +23,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^UpdateFunctionConfiguration.*` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^UpdateFunctionConfiguration.*` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: AWS_CloudTrail_Important_Change
@@ -34,7 +34,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^cloudtrail\.amazonaws\.com$` and (eventName=~`(?i)^StopLogging$` or eventName=~`(?i)^UpdateTrail$` or eventName=~`(?i)^DeleteTrail$`) [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^cloudtrail\.amazonaws\.com$` and (eventName=~`(?i)^StopLogging$` or eventName=~`(?i)^UpdateTrail$` or eventName=~`(?i)^DeleteTrail$`) [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: AWS_Config_Disabling_Channel_Recorder
@@ -45,7 +45,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^config\.amazonaws\.com$` and (eventName=~`(?i)^DeleteDeliveryChannel$` or eventName=~`(?i)^StopConfigurationRecorder$`) [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^config\.amazonaws\.com$` and (eventName=~`(?i)^DeleteDeliveryChannel$` or eventName=~`(?i)^StopConfigurationRecorder$`) [1m])) or vector(0) > 0
     labels:
       severity: high
   - alert: AWS_Console_GetSigninToken_Potential_Abuse
@@ -60,7 +60,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^signin\.amazonaws\.com$` and eventName=~`(?i)^GetSigninToken$` and userAgent!~`(?i).*Jersey/\$\{project\.version\}.*` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^signin\.amazonaws\.com$` and eventName=~`(?i)^GetSigninToken$` and userAgent!~`(?i).*Jersey/\$\{project\.version\}.*` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: AWS_Create_Load_Balancer
@@ -71,7 +71,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^elasticloadbalancing\.amazonaws\.com$` and eventName=~`(?i)^CreateLoadBalancer.*` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^elasticloadbalancing\.amazonaws\.com$` and eventName=~`(?i)^CreateLoadBalancer.*` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: AWS_EC2_Disable_EBS_Encryption
@@ -86,7 +86,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^ec2\.amazonaws\.com$` and eventName=~`(?i)^DisableEbsEncryptionByDefault$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and eventName=~`(?i)^DisableEbsEncryptionByDefault$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: AWS_EC2_Download_Userdata
@@ -97,7 +97,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^ec2\.amazonaws\.com$` and requestParameters_attribute=~`(?i)^userData$` and eventName=~`(?i)^DescribeInstanceAttribute$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and requestParameters_attribute=~`(?i)^userData$` and eventName=~`(?i)^DescribeInstanceAttribute$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: AWS_EC2_Startup_Shell_Script_Change
@@ -108,7 +108,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^ec2\.amazonaws\.com$` and requestParameters_attribute=~`(?i)^userData$` and eventName=~`(?i)^ModifyInstanceAttribute$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and requestParameters_attribute=~`(?i)^userData$` and eventName=~`(?i)^ModifyInstanceAttribute$` [1m])) or vector(0) > 0
     labels:
       severity: high
   - alert: AWS_EC2_VM_Export_Failure
@@ -119,7 +119,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventName=~`(?i)^CreateInstanceExportTask$` and eventSource=~`(?i)^ec2\.amazonaws\.com$` and errorMessage!~`(?i).*` and errorCode!~`(?i).*` and responseElements!~`(?i).*Failure.*` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i)^CreateInstanceExportTask$` and eventSource=~`(?i)^ec2\.amazonaws\.com$` and errorMessage!~`(?i).*` and errorCode!~`(?i).*` and responseElements!~`(?i).*Failure.*` [1m])) or vector(0) > 0
     labels:
       severity: low
   - alert: AWS_ECS_Backdoor_Task_Definition
@@ -130,7 +130,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^ecs\.amazonaws\.com$` and (eventName=~`(?i)^DescribeTaskDefinition$` or eventName=~`(?i)^RegisterTaskDefinition$` or eventName=~`(?i)^RunTask$`) and requestParameters_containerDefinitions_command=~`(?i).*169\.254.*` and requestParameters_containerDefinitions_command=~`(?i).*\$AWS_CONTAINER_CREDENTIALS.*` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ecs\.amazonaws\.com$` and (eventName=~`(?i)^DescribeTaskDefinition$` or eventName=~`(?i)^RegisterTaskDefinition$` or eventName=~`(?i)^RunTask$`) and requestParameters_containerDefinitions_command=~`(?i).*169\.254.*` and requestParameters_containerDefinitions_command=~`(?i).*\$AWS_CONTAINER_CREDENTIALS.*` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: AWS_EFS_Fileshare_Modified_or_Deleted
@@ -147,7 +147,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^elasticfilesystem\.amazonaws\.com$` and eventName=~`(?i)^DeleteFileSystem$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^elasticfilesystem\.amazonaws\.com$` and eventName=~`(?i)^DeleteFileSystem$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: AWS_EFS_Fileshare_Mount_Modified_or_Deleted
@@ -158,7 +158,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^elasticfilesystem\.amazonaws\.com$` and eventName=~`(?i)^DeleteMountTarget$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^elasticfilesystem\.amazonaws\.com$` and eventName=~`(?i)^DeleteMountTarget$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: AWS_EKS_Cluster_Created_or_Deleted
@@ -169,7 +169,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^eks\.amazonaws\.com$` and (eventName=~`(?i)^CreateCluster$` or eventName=~`(?i)^DeleteCluster$`) [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^eks\.amazonaws\.com$` and (eventName=~`(?i)^CreateCluster$` or eventName=~`(?i)^DeleteCluster$`) [1m])) or vector(0) > 0
     labels:
       severity: low
   - alert: AWS_ElastiCache_Security_Group_Created
@@ -180,7 +180,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^elasticache\.amazonaws\.com$` and eventName=~`(?i)^CreateCacheSecurityGroup$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^elasticache\.amazonaws\.com$` and eventName=~`(?i)^CreateCacheSecurityGroup$` [1m])) or vector(0) > 0
     labels:
       severity: low
   - alert: AWS_ElastiCache_Security_Group_Modified_or_Deleted
@@ -191,7 +191,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^elasticache\.amazonaws\.com$` and (eventName=~`(?i)^DeleteCacheSecurityGroup$` or eventName=~`(?i)^AuthorizeCacheSecurityGroupIngress$` or eventName=~`(?i)^RevokeCacheSecurityGroupIngress$` or eventName=~`(?i)^AuthorizeCacheSecurityGroupEgress$` or eventName=~`(?i)^RevokeCacheSecurityGroupEgress$`) [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^elasticache\.amazonaws\.com$` and (eventName=~`(?i)^DeleteCacheSecurityGroup$` or eventName=~`(?i)^AuthorizeCacheSecurityGroupIngress$` or eventName=~`(?i)^RevokeCacheSecurityGroupIngress$` or eventName=~`(?i)^AuthorizeCacheSecurityGroupEgress$` or eventName=~`(?i)^RevokeCacheSecurityGroupEgress$`) [1m])) or vector(0) > 0
     labels:
       severity: low
   - alert: AWS_Glue_Development_Endpoint_Activity
@@ -202,7 +202,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^glue\.amazonaws\.com$` and (eventName=~`(?i)^CreateDevEndpoint$` or eventName=~`(?i)^DeleteDevEndpoint$` or eventName=~`(?i)^UpdateDevEndpoint$`) [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^glue\.amazonaws\.com$` and (eventName=~`(?i)^CreateDevEndpoint$` or eventName=~`(?i)^DeleteDevEndpoint$` or eventName=~`(?i)^UpdateDevEndpoint$`) [1m])) or vector(0) > 0
     labels:
       severity: low
   - alert: AWS_GuardDuty_Important_Change
@@ -213,7 +213,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^guardduty\.amazonaws\.com$` and eventName=~`(?i)^CreateIPSet$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^guardduty\.amazonaws\.com$` and eventName=~`(?i)^CreateIPSet$` [1m])) or vector(0) > 0
     labels:
       severity: high
   - alert: AWS_IAM_Backdoor_Users_Keys
@@ -230,7 +230,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^CreateAccessKey$` and userIdentity_arn!~`(?i).*responseElements\.accessKey\.userName.*` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^CreateAccessKey$` and userIdentity_arn!~`(?i).*responseElements\.accessKey\.userName.*` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: AWS_IAM_S3Browser_LoginProfile_Creation
@@ -241,7 +241,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^iam\.amazonaws\.com$` and (eventName=~`(?i)^GetLoginProfile$` or eventName=~`(?i)^CreateLoginProfile$`) and userAgent=~`(?i).*S3\ Browser.*` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and (eventName=~`(?i)^GetLoginProfile$` or eventName=~`(?i)^CreateLoginProfile$`) and userAgent=~`(?i).*S3\ Browser.*` [1m])) or vector(0) > 0
     labels:
       severity: high
   - alert: AWS_IAM_S3Browser_Templated_S3_Bucket_Policy_Creation
@@ -252,7 +252,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^PutUserPolicy$` and userAgent=~`(?i).*S3\ Browser.*` and requestParameters=~`(?i).*"arn:aws:s3:::<YOUR\-BUCKET\-NAME>/.*".*` and requestParameters=~`(?i).*"s3:GetObject".*` and requestParameters=~`(?i).*"Allow".*` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^PutUserPolicy$` and userAgent=~`(?i).*S3\ Browser.*` and requestParameters=~`(?i).*"arn:aws:s3:::<YOUR\-BUCKET\-NAME>/.*".*` and requestParameters=~`(?i).*"s3:GetObject".*` and requestParameters=~`(?i).*"Allow".*` [1m])) or vector(0) > 0
     labels:
       severity: high
   - alert: AWS_IAM_S3Browser_User_or_AccessKey_Creation
@@ -263,7 +263,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^iam\.amazonaws\.com$` and (eventName=~`(?i)^CreateUser$` or eventName=~`(?i)^CreateAccessKey$`) and userAgent=~`(?i).*S3\ Browser.*` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and (eventName=~`(?i)^CreateUser$` or eventName=~`(?i)^CreateAccessKey$`) and userAgent=~`(?i).*S3\ Browser.*` [1m])) or vector(0) > 0
     labels:
       severity: high
   - alert: AWS_Identity_Center_Identity_Provider_Change
@@ -278,7 +278,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | (eventSource=~`(?i)^sso\-directory\.amazonaws\.com$` or eventSource=~`(?i)^sso\.amazonaws\.com$`) and (eventName=~`(?i)^AssociateDirectory$` or eventName=~`(?i)^DisableExternalIdPConfigurationForDirectory$` or eventName=~`(?i)^DisassociateDirectory$` or eventName=~`(?i)^EnableExternalIdPConfigurationForDirectory$`) [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | (eventSource=~`(?i)^sso\-directory\.amazonaws\.com$` or eventSource=~`(?i)^sso\.amazonaws\.com$`) and (eventName=~`(?i)^AssociateDirectory$` or eventName=~`(?i)^DisableExternalIdPConfigurationForDirectory$` or eventName=~`(?i)^DisassociateDirectory$` or eventName=~`(?i)^EnableExternalIdPConfigurationForDirectory$`) [1m])) or vector(0) > 0
     labels:
       severity: high
   - alert: AWS_Lambda_Function_Created_or_Invoked
@@ -289,7 +289,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^CreateFunction$` or eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^Invoke$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^CreateFunction$` or eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^Invoke$` [1m])) or vector(0) > 0
     labels:
       severity: low
   - alert: AWS_Macie_Evasion
@@ -300,7 +300,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventName=~`(?i)^ArchiveFindings$` or eventName=~`(?i)^CreateFindingsFilter$` or eventName=~`(?i)^DeleteMember$` or eventName=~`(?i)^DisassociateFromMasterAccount$` or eventName=~`(?i)^DisassociateMember$` or eventName=~`(?i)^DisableMacie$` or eventName=~`(?i)^DisableOrganizationAdminAccount$` or eventName=~`(?i)^UpdateFindingsFilter$` or eventName=~`(?i)^UpdateMacieSession$` or eventName=~`(?i)^UpdateMemberSession$` or eventName=~`(?i)^UpdateClassificationJob$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i)^ArchiveFindings$` or eventName=~`(?i)^CreateFindingsFilter$` or eventName=~`(?i)^DeleteMember$` or eventName=~`(?i)^DisassociateFromMasterAccount$` or eventName=~`(?i)^DisassociateMember$` or eventName=~`(?i)^DisableMacie$` or eventName=~`(?i)^DisableOrganizationAdminAccount$` or eventName=~`(?i)^UpdateFindingsFilter$` or eventName=~`(?i)^UpdateMacieSession$` or eventName=~`(?i)^UpdateMemberSession$` or eventName=~`(?i)^UpdateClassificationJob$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: AWS_RDS_Master_Password_Change
@@ -311,7 +311,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^rds\.amazonaws\.com$` and responseElements_pendingModifiedValues_masterUserPassword=~`(?i).*` and eventName=~`(?i)^ModifyDBInstance$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^rds\.amazonaws\.com$` and responseElements_pendingModifiedValues_masterUserPassword=~`(?i).*` and eventName=~`(?i)^ModifyDBInstance$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: AWS_Root_Credentials
@@ -322,7 +322,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | userIdentity_type=~`(?i)^Root$` and eventType!~`(?i)^AwsServiceEvent$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | userIdentity_type=~`(?i)^Root$` and eventType!~`(?i)^AwsServiceEvent$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: AWS_Route_53_Domain_Transfer_Lock_Disabled
@@ -333,7 +333,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^route53\.amazonaws\.com$` and eventName=~`(?i)^DisableDomainTransferLock$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^route53\.amazonaws\.com$` and eventName=~`(?i)^DisableDomainTransferLock$` [1m])) or vector(0) > 0
     labels:
       severity: low
   - alert: AWS_Route_53_Domain_Transferred_to_Another_Account
@@ -344,7 +344,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^route53\.amazonaws\.com$` and eventName=~`(?i)^TransferDomainToAnotherAwsAccount$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^route53\.amazonaws\.com$` and eventName=~`(?i)^TransferDomainToAnotherAwsAccount$` [1m])) or vector(0) > 0
     labels:
       severity: low
   - alert: AWS_S3_Bucket_Versioning_Disable
@@ -355,7 +355,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^PutBucketVersioning$` and requestParameters=~`(?i).*Suspended.*` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^PutBucketVersioning$` and requestParameters=~`(?i).*Suspended.*` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: AWS_S3_Bucket_Versioning
@@ -366,7 +366,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^PutBucketVersioning$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^PutBucketVersioning$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: AWS_S3_made_public
@@ -376,7 +376,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventName=~`(?i).*PutBucketPublicAccessBlock.*` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i).*PutBucketPublicAccessBlock.*` [1m])) or vector(0) > 0
     labels:
       severity: high
   - alert: AWS_Security_Group_Port_Opened
@@ -387,7 +387,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^ec2\.amazonaws\.com$` and (eventName=~`(?i)^AuthorizeSecurityGroupIngress$` or eventName=~`(?i)^ModifySecurityGroupRules$`) [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and (eventName=~`(?i)^AuthorizeSecurityGroupIngress$` or eventName=~`(?i)^ModifySecurityGroupRules$`) [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: AWS_SecurityHub_Findings_Evasion
@@ -398,7 +398,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^securityhub\.amazonaws\.com$` and (eventName=~`(?i)^BatchUpdateFindings$` or eventName=~`(?i)^DeleteInsight$` or eventName=~`(?i)^UpdateFindings$` or eventName=~`(?i)^UpdateInsight$`) [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^securityhub\.amazonaws\.com$` and (eventName=~`(?i)^BatchUpdateFindings$` or eventName=~`(?i)^DeleteInsight$` or eventName=~`(?i)^UpdateFindings$` or eventName=~`(?i)^UpdateInsight$`) [1m])) or vector(0) > 0
     labels:
       severity: high
   - alert: AWS_Snapshot_Backup_Exfiltration
@@ -409,7 +409,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^ec2\.amazonaws\.com$` and eventName=~`(?i)^ModifySnapshotAttribute$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and eventName=~`(?i)^ModifySnapshotAttribute$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: AWS_STS_GetSessionToken_Misuse
@@ -420,7 +420,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^sts\.amazonaws\.com$` and eventName=~`(?i)^GetSessionToken$` and userIdentity_type=~`(?i)^IAMUser$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^sts\.amazonaws\.com$` and eventName=~`(?i)^GetSessionToken$` and userIdentity_type=~`(?i)^IAMUser$` [1m])) or vector(0) > 0
     labels:
       severity: low
   - alert: AWS_Suspicious_SAML_Activity
@@ -431,7 +431,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^sts\.amazonaws\.com$` and eventName=~`(?i)^AssumeRoleWithSAML$` or eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^UpdateSAMLProvider$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^sts\.amazonaws\.com$` and eventName=~`(?i)^AssumeRoleWithSAML$` or eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^UpdateSAMLProvider$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: AWS_User_Login_Profile_Was_Modified
@@ -446,7 +446,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^UpdateLoginProfile$` and userIdentity_arn!~`(?i).*requestParameters\.userName.*` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^UpdateLoginProfile$` and userIdentity_arn!~`(?i).*requestParameters\.userName.*` [1m])) or vector(0) > 0
     labels:
       severity: high
   - alert: AWS_vm_created
@@ -456,7 +456,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventName=~`(?i)^RunInstances$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i)^RunInstances$` [1m])) or vector(0) > 0
     labels:
       severity: medium
   - alert: Potential_Bucket_Enumeration_on_AWS
@@ -467,7 +467,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^ListBuckets$` and type!~`(?i)^AssumedRole$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^ListBuckets$` and type!~`(?i)^AssumedRole$` [1m])) or vector(0) > 0
     labels:
       severity: low
   - alert: Restore_Public_AWS_RDS_Instance
@@ -478,7 +478,7 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^rds\.amazonaws\.com$` and responseElements_publiclyAccessible=~`(?i)^true$` and eventName=~`(?i)^RestoreDBInstanceFromDBSnapshot$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^rds\.amazonaws\.com$` and responseElements_publiclyAccessible=~`(?i)^true$` and eventName=~`(?i)^RestoreDBInstanceFromDBSnapshot$` [1m])) or vector(0) > 0
     labels:
       severity: high
   - alert: SES_Identity_Has_Been_Deleted
@@ -489,6 +489,6 @@ rules:
       tenant_id: <tenant_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | logfmt | eventSource=~`(?i)^ses\.amazonaws\.com$` and eventName=~`(?i)^DeleteIdentity$` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ses\.amazonaws\.com$` and eventName=~`(?i)^DeleteIdentity$` [1m])) or vector(0) > 0
     labels:
       severity: medium
