@@ -10,5 +10,5 @@ config:
   receivers:
     - name: external-api
       webhook_configs:
-        - url: "http://accuknox-retriver.accuknox-retriver.svc:8080/v1/alerts/alertsmanager"
+        - url: "http://retreiver-retriver.retreiver:8080/v1/alerts/alertsmanager"
           send_resolved: false

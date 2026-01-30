@@ -10,29 +10,27 @@ data:
     - alert: Malicious IP Detected
       expr: |
         count_over_time({job!=""} |~ "$BLOCK_LIST" [1m]) > 0
-      for: 30s
       labels:
           severity: critical
       annotations:
           summary: "Malicious IP Detected"
           description: "Malicious IP Detected"
-          tenant_id: achref
+          tenant: $tenant
           topic: acculens
           tool: |
             {{ .Labels.job }}
-
-  threat-intel.sh: |
+  threat-intel.sh: |  
     #!/bin/bash
     pushd /scripts
     export BLOCK_LIST=$(curl https://raw.githubusercontent.com/stamparm/ipsum/refs/heads/master/levels/5.txt | grep -v "#" | awk '{print $1}' | sed 's/\./\\\\./g' | paste -sd'|' -)
     TMP_FILE=$(mktemp)
-    envsubst < threat-intel.rule > $TMP_FILE
     for ns in $(kubectl get namespace -o name -l env -l tenant | cut -d"/" -f2)
     do
       env=$(kubectl get ns $ns -o jsonpath='{.metadata.labels.env}')
       user=$(echo $ns | sed "s/^tenant-//g")
-      tenant="$env-$user"
+      export tenant="$env-$user"
       echo "Processing Tenant= $tenant"
+      envsubst < threat-intel.rule > $TMP_FILE
       response=$(curl -H"X-Scope-OrgID: $tenant" -X POST -H "Content-Type: application/yaml" --data-binary "@$TMP_FILE" "$LOKI_GW_SVC/loki/api/v1/rules/threat-intel")
       if [[ "$response" == *'"status":"success"'* ]]; then
         echo "Successfully applied $TMP_FILE"
