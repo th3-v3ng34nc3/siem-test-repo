@@ -1,3 +1,3 @@
-path "siem/stg/data/*" {
+path "siem/validation/data/*" {
   capabilities = ["read"]
 }

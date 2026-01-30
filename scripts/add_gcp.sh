@@ -21,8 +21,8 @@ DIR_LOC="$ENVS_DIR/$DIR_PREFIX"
 TPL_LOC="$ENVS_DIR/templates"
 CLOUDTRAIL_TPL="$TPL_LOC/gcp-collector-tpl"
 
-echo "Export the service account key  in a variable called SA_KEY_B64(IN BASE64 FORMAT!!!!)"
 if [[ -z "$SA_KEY_B64" ]]; then
+  echo "Export the service account key  in a variable called SA_KEY_B64(IN BASE64 FORMAT!!!!)"
   echo "Error: SA_KEY_B64 is required." >&2
   exit 1
 fi

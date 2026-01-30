@@ -1,0 +1,3 @@
+server=siem.v2.validation.accuknox.com
+port=443
+protocol=https

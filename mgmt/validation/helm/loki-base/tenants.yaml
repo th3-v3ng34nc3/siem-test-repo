@@ -1,0 +1,3 @@
+tenants:
+  - tenant: ref+vault://siem/validation/tenants/canary-user/loki_tenant/#username
+    password: ref+vault://siem/validation/tenants/canary-user/loki_tenant/#password

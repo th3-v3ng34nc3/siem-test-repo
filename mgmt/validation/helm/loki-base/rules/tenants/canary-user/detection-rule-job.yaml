@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: detection-rule-job
-  namespace: tenant-<tenant_id>
+  namespace: tenant-canary-user
 spec:
   backoffLimit: 3          # Max retries
   ttlSecondsAfterFinished: 600 # Cleanup job 10mins after finishing

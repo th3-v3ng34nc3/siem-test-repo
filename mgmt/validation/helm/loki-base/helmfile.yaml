@@ -19,16 +19,16 @@ environments:
   default:
     values:
       - storage:
-          region: ref+vault://<siem_backend_path>/#region
-          chunks: ref+vault://<siem_backend_path>/#chunks
-          admin: ref+vault://<siem_backend_path>/#admin
-          ruler: ref+vault://<siem_backend_path>/#ruler
-          accessKeyId: ref+vault://<siem_backend_path>/#accessKeyId
-          secretAccessKey: ref+vault://<siem_backend_path>/#secretAccessKey
+          region: ref+vault://siem/validation/storage/backend/#region
+          chunks: ref+vault://siem/validation/storage/backend/#chunks
+          admin: ref+vault://siem/validation/storage/backend/#admin
+          ruler: ref+vault://siem/validation/storage/backend/#ruler
+          accessKeyId: ref+vault://siem/validation/storage/backend/#accessKeyId
+          secretAccessKey: ref+vault://siem/validation/storage/backend/#secretAccessKey
       - tenants.yaml
       - canary:
-          username: ref+vault://<siem_mount_path>/tenants/canary-user/loki_tenant/#username
-          password: ref+vault://<siem_mount_path>/tenants/canary-user/loki_tenant/#password     
+          username: ref+vault://siem/validation/tenants/canary-user/loki_tenant/#username
+          password: ref+vault://siem/validation/tenants/canary-user/loki_tenant/#password     
 ---
 releases:
   - name: external-secrets
@@ -77,8 +77,8 @@ releases:
     namespace: retreiver
     values:
       - accuknox:
-          token: ref+vault://<siem_mount_path>/accuknox/login/#token
-          url: ref+vault://<siem_mount_path>/accuknox/login/#endpoint
+          token: ref+vault://siem/validation/accuknox/login/#token
+          url: ref+vault://siem/validation/accuknox/login/#endpoint
   - name: kustomize
     chart: ./kustomize
     needs:

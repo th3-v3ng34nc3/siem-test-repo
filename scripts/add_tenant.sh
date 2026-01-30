@@ -98,14 +98,19 @@ EOF
 
 echo "Adding k8s templates"
 TENANT_TPL="$DIR_LOC/$ENV_ID/helm/loki-base/kustomize/tenants/$TENANT_ID"
+TENANT_RULE_TPL="$DIR_LOC/$ENV_ID/helm/loki-base/rules/tenants/$TENANT_ID"
 
 if [ -d "$TENANT_TPL" ]; then
     echo "WARN: Tenant k8s folder '$TENANT_TPL' already exists for this environment. skipping"
 else
     cp -r "$ENVS_DIR/templates/tenant-tpl"  "$TENANT_TPL"
+    cp -r "$ENVS_DIR/templates/tenant-rules-tpl"  "$TENANT_RULE_TPL"
     yq '.resources |= ( . + ["'$TENANT_ID'"] | unique)' -i "$TENANT_TPL/../kustomization.yaml"
+    yq '.resources |= ( . + ["'$TENANT_ID'"] | unique)' -i "$TENANT_RULE_TPL/../kustomization.yaml"
     find "$TENANT_TPL" -type f -exec sed -i '' -e "s#<tenant_id>#$TENANT_ID#g" {} \;
     find "$TENANT_TPL" -type f -exec sed -i '' -e "s#<env_id>#$ENV_ID#g" {} \;
+    find "$TENANT_RULE_TPL" -type f -exec sed -i '' -e "s#<tenant_id>#$TENANT_ID#g" {} \;
+    find "$TENANT_RULE_TPL" -type f -exec sed -i '' -e "s#<env_id>#$ENV_ID#g" {} \;
 fi
 
 echo "Adding tenant to loki for athx & authz"

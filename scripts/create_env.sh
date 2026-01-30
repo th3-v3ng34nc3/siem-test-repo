@@ -28,6 +28,12 @@ if [ "$confirmation" != "yes" ]; then
     exit 1
 fi
 
+if [[ -z "$AK_TOKEN" ]]; then
+  echo "Export Accuknox token in a variable called AK_TOKEN"
+  echo "Error: AK_TOKEN is required." >&2
+  exit 1
+fi
+
 # --- Input and DNS Validation ---
 echo "Enter the env name:"
 read -r ENV_NAME
@@ -95,7 +101,6 @@ fi
 echo "Enter Azure Mutex storage account primaryConnection string (create a storage account):"
 read -r PRIMARYCONN
 
-
 echo "Enter Azure Mutex prefix:"
 read -r PREFIX
 
@@ -103,6 +108,9 @@ if [[ ! "$PREFIX" =~ ^[a-z]+$ ]]; then
     echo "Error: Invalid Prefix. Must be only lowercase alphabet."
     exit 1
 fi
+
+echo "Enter Accuknox alerts endpoint url (e.g: https://cwpp.demo.accuknox.com/webhook/alert):"
+read -r AK_ENDPOINT
 
 vault_check_connect
 
@@ -113,6 +121,7 @@ echo "-----------------------------------------------------"
 echo "Env Name: $ENV_NAME"
 echo "Vault: $VAULT_ADDR"
 echo "k8s: $K8S_CLUSTER_ADDR"
+echo "URL: $AK_ENDPOINT"
 echo "Action: Creating new siem env"
 echo "-----------------------------------------------------"
 
@@ -139,6 +148,7 @@ fi
 vault kv put "$MOUNT_TARGET/server" "server=$URL" "port=$PORT" "protocol=$PROTOCOL_UPPER"
 vault kv put "$MOUNT_TARGET/mutex/AZURE-STORAGEACCOUNT" "prefix=$PREFIX" "primaryconnection=$PRIMARYCONN"
 vault kv put "$MOUNT_TARGET/storage/backend" "region=$REGION" "chunks=$CHUNKS" "admin=$ADMIN" "ruler=$RULER" "accessKeyId=$LOKI_BUCKET_ACCESS_KEY" "secretAccessKey=$LOKI_BUCKET_SECRET_KEY"
+vault kv put "$MOUNT_TARGET/accuknox/login" "token=$AK_TOKEN" "endpoint=$AK_ENDPOINT"
 
 SIEM_BACKEND_PATH="$MOUNT_TARGET/storage/backend"
 

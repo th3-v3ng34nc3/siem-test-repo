@@ -1,0 +1,241 @@
+name: Sigma rules
+rules:
+  - alert: Connection_from_non_authorized_geo_location
+    annotations:
+      description: Connection from non authorized geo-location
+      summary: Connection from non authorized geo-location
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | country_iso_code=~`(?i).*IN.*` or continent_code=~`(?i).*AS.*` or continent_code=~`(?i).*ASA.*` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: GCP_bucket_configuration_updated
+    annotations:
+      description: GCP bucket configuration updated
+      summary: GCP bucket configuration updated
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | methodName=~`(?i)^storage\.buckets\.update$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: GCP_Firewall_Rule_Created_or_Policy_Rule_Added
+    annotations:
+      author: suryatyagi@accuknox.com
+      description: Detects creation of a VPC firewall rule or policy, potentially exposing new ports.
+      summary: GCP Firewall Rule Created or Policy Rule Added
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | (protoPayload_methodName=~`(?i)^beta\.compute\.firewalls\.insert$` or protoPayload_methodName=~`(?i)^v1\.compute\.firewalls\.patch$` or protoPayload_methodName=~`(?i)^beta\.compute\.networkFirewallPolicies\.addRule$` or protoPayload_methodName=~`(?i)^beta\.compute\.networkFirewallPolicies\.patchRule$`) and resource_type=~`(?i)^gce_firewall_rule$` and operation_first=~`(?i)^true$` [1m])) or vector(0) > 0
+    labels:
+      severity: high
+  - alert: GCP_User_Granted_Admin_Role
+    annotations:
+      author: suryatyagi@accuknox.com
+      description: Detects when a user or service account is assigned an admin/owner/editor role in GCP.
+      summary: GCP User Granted Admin Role
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | (protoPayload_methodName=~`(?i)^SetIamPolicy$` or protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.SetIamPolicy$` or protoPayload_methodName=~`(?i)^google\.cloud\.resourcemanager\.v1\.SetIamPolicy$`) and protoPayload_serviceData_policyDelta_bindingDeltas_action=~`(?i)^ADD$` and protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i)^roles/owner$` or (protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateServiceAccount$` or protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateUser$`) and protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i)^roles/owner$` [1m])) or vector(0) > 0
+    labels:
+      severity: high
+  - alert: gcp_vm_created
+    annotations:
+      description: gcp vm created
+      summary: gcp vm created
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | protoPayload_methodName=~`(?i)^beta\.compute\.instances\.insert$` [1m])) or vector(0) > 0
+    labels:
+      severity: low
+  - alert: GCP_VPC_Network_Deletion
+    annotations:
+      author: suryatyagi@accuknox.com
+      description: Detects deletion of a Virtual Private Cloud (VPC) network in Google Cloud Platform via Audit Logs.
+      summary: GCP VPC Network Deletion
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | protoPayload_methodName=~`(?i)^v1\.compute\.networks\.delete$` [1m])) or vector(0) > 0
+    labels:
+      severity: high
+  - alert: GCP_VPC_Route_Created
+    annotations:
+      author: suryatyagi@accuknox.com
+      description: Detects the creation of a custom VPC route in GCP using Audit Logs.
+      summary: GCP VPC Route Created
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | protoPayload_methodName=~`(?i)^v1\.compute\.routes\.insert$` and resource_type=~`(?i)^gce_route$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: GCP_VPC_Route_Deleted
+    annotations:
+      author: suryatyagi@accuknox.com
+      description: Detects the deletion of a custom VPC route in GCP using Audit Logs.
+      summary: GCP VPC Route Deleted
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | protoPayload_methodName=~`(?i)^v1\.compute\.routes\.delete$` and resource_type=~`(?i)^gce_route$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: Google_Cloud_IAM_Custom_Role_Created
+    annotations:
+      author: Murtaza Udaipurwala
+      description: Detects when an IAM custom role is created in Google Cloud.
+      summary: Google Cloud IAM Custom Role Created
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateRole$` or gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.UndeleteRole$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: Google_Cloud_IAM_Custom_Role_Deleted
+    annotations:
+      author: Murtaza Udaipurwala
+      description: Detects when an IAM custom role is deleted in Google Cloud.
+      summary: Google Cloud IAM Custom Role Deleted
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.DeleteRole$` and gcp_audit_protoPayload_response_deleted=~`(?i)^true$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: Google_Cloud_IAM_Member_Assigned_Owner_OR_Admin_Role
+    annotations:
+      author: Murtaza Udaipurwala
+      description: Detects when an IAM member is assigned an owner or admin role in Google Cloud.
+      summary: Google Cloud IAM Member Assigned Owner OR Admin Role
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_action=~`(?i)^ADD$` and gcp_audit_protoPayload_methodName=~`(?i)^SetIamPolicy$` and (gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/resourcemanager\.organizationAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/resourcemanager\.projectIamAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/accesscontextmanager\.policyAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/axt\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/actions\.Admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/serviceconsumermanagement\.tenancyUnitsAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/advisorynotifications\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/recommender\.alloydbAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.listingAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/gkemulticloud\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.jobOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.modelOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.operationOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.subscriptionOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/bigquery\.dataOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/certificatemanager\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/chat\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudasset\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudbuild\.integrationsOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudbuild\.workerPoolOwner.*`) [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: Google_Cloud_Logging_Bucket_Created
+    annotations:
+      author: Murtaza Udaipurwala
+      description: Detects when a logging bucket is created in Google Cloud.
+      summary: Google Cloud Logging Bucket Created
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.CreateBucket$` or gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UndeleteBucket$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: Google_Cloud_Logging_Bucket_Deleted
+    annotations:
+      author: Murtaza Udaipurwala
+      description: Detects when a logging bucket is deleted in Google Cloud.
+      summary: Google Cloud Logging Bucket Deleted
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.DeleteBucket$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: Google_Cloud_Logging_Bucket_Modified
+    annotations:
+      author: Murtaza Udaipurwala
+      description: Detects when a logging bucket is modified in Google Cloud.
+      summary: Google Cloud Logging Bucket Modified
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UpdateBucket$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: Google_Cloud_Logging_Sink_Deleted
+    annotations:
+      author: pratheep
+      description: Detects when a Cloud Logging sink is deleted in Google Cloud.
+      summary: Google Cloud Logging Sink Deleted
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.DeleteSink$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: Google_Cloud_Logging_Sink_Updated
+    annotations:
+      author: Pratheep
+      description: Detects when a Logging sink is updated in Google Cloud.
+      summary: Google Cloud Logging Sink Updated
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UpdateSink$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: Google_Cloud_Service_Account_Key_Created
+    annotations:
+      author: Murtaza Udaipurwala
+      description: Detects when a Service Account key is created in Google Cloud.
+      summary: Google Cloud Service Account Key Created
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateServiceAccountKey$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: Google_Cloud_Service_Account_Key_Deleted
+    annotations:
+      author: Murtaza Udaipurwala
+      description: Detects when a Service Account key is deleted in Google Cloud.
+      summary: Google Cloud Service Account Key Deleted
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.DeleteServiceAccountKey$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: Google_Cloud_Storage_Bucket_s_IAM_Permissions_Modified
+    annotations:
+      author: Murtaza Udaipurwala
+      description: Detects when a storage bucket's IAM permission is modified in Google Cloud.
+      summary: Google Cloud Storage Bucket's IAM Permissions Modified
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_protoPayload_methodName=~`(?i)^storage\.setIamPermissions$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: Google_Cloud_Storage_Buckets_Created
+    annotations:
+      author: Austin Songer @austinsonger
+      description: Detects when storage bucket is created in Google Cloud.
+      summary: Google Cloud Storage Buckets Created
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_method_name=~`(?i)^storage\.buckets\.insert$` or gcp_audit_method_name=~`(?i)^storage\.buckets\.create$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: Google_Cloud_Storage_Buckets_Deleted
+    annotations:
+      author: Austin Songer @austinsonger
+      description: Detects when storage bucket is modified or deleted in Google Cloud.
+      summary: Google Cloud Storage Buckets Deleted
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_method_name=~`(?i)^storage\.buckets\.delete$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: Google_Cloud_Storage_Buckets_Modified_or_Deleted
+    annotations:
+      author: Austin Songer @austinsonger
+      description: Detects when storage bucket is modified or deleted in Google Cloud.
+      summary: Google Cloud Storage Buckets Modified or Deleted
+      tenant_id: <tenant_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({job="gcplog"} | logfmt | gcp_audit_method_name=~`(?i)^storage\.buckets\.insert$` or gcp_audit_method_name=~`(?i)^storage\.buckets\.create$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
