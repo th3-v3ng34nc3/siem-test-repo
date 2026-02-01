@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: aws-aws-cg
+  namespace: tenant-cloudguardian
+  annotations:
+    tenant: cloudguardian
+    collector: aws-cg
+    type: aws
+spec:
+  selector:
+    app: aws-aws-cg
+  ports:
+  - port: 9090
+    targetPort: 9090
+    name: tcp
