@@ -34,27 +34,32 @@ releases:
   - name: external-secrets
     chart: external-secrets/external-secrets
     version: 1.2.0
+    timeout: 10000
     namespace: external-secrets
   - name: cert-manager
     chart: cert-manager/cert-manager
     version: v1.19.2
     namespace: cert-manager
+    timeout: 10000
     values:
     - certmanager/defaults.yaml
   - name: nginx-ingress
     chart: nginx-ingress/nginx-ingress
     version: 2.4.1
     namespace: nginx-ingress
+    timeout: 10000
   - name: alertmanager
     chart: prometheus-community/alertmanager
     version: 1.28.1
     namespace: alertmgr
+    timeout: 10000
     values:
       - alertmgr/webhook.yaml
   - name: loki
     chart: grafana/loki
     version: 6.45.2
     namespace: loki
+    timeout: 10000
     needs:
       - alertmgr/alertmanager
     values:
@@ -67,6 +72,7 @@ releases:
   - name: grafana
     chart: grafana/grafana
     namespace: grafana
+    timeout: 10000
     values:
       - grafana/grafana-values.yaml
     needs:
@@ -75,12 +81,14 @@ releases:
     chart: accuknox-ecr/retriver
     version: v1.0.2
     namespace: retreiver
+    timeout: 10000
     values:
       - accuknox:
           token: ref+vault://siem/validation/accuknox/login/#token
           url: ref+vault://siem/validation/accuknox/login/#endpoint
   - name: kustomize
     chart: ./kustomize
+    timeout: 10000
     needs:
      - cert-manager/cert-manager
      - external-secrets/external-secrets
@@ -111,11 +119,13 @@ releases:
   - name: prometheus
     namespace: monitoring
     chart: prometheus-community/kube-prometheus-stack
+    timeout: 10000
     version: 61.0.0 # Use the latest stable version
     createNamespace: true
     values:
     - prom/values.yaml
   - name: rules
     chart: ./rules
+    timeout: 10000
     needs:
     - retreiver/retreiver

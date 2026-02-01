@@ -6,11 +6,19 @@ minio:
     enabled: false
 ingester:
   replicas: 3
+  kind: StatefulSet
+  persistence:
+    enabled: true
+    claims:
+      - name: data
+        accessModes:
+          - ReadWriteOnce
+        size: 15Gi
   zoneAwareReplication:
     enabled: false
   chunk_encoding: snappy
 querier:
-  replicas: 1
+  replicas: 3
   maxUnavailable: 2
   max_concurrent: 4
 queryFrontend:
@@ -19,12 +27,12 @@ queryFrontend:
 queryScheduler:
   replicas: 1
 distributor:
-  replicas: 1
-  maxUnavailable: 2
+  replicas: 3
+  maxUnavailable: 1
 compactor:
   replicas: 1
 indexGateway:
-  replicas: 1
+  replicas: 2
   maxUnavailable: 1
 
 bloomPlanner:
@@ -45,8 +53,15 @@ singleBinary:
   replicas: 0
 
 ruler:
-  replicas: 1
+  replicas: 3
   maxUnavailable: 1
+  persistence:
+    enabled: true
+    claims:
+      - name: data
+        accessModes:
+          - ReadWriteOnce
+        size: 15Gi
 
 chunksCache:
   enabled: true

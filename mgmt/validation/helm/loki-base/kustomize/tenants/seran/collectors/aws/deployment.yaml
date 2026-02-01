@@ -2,9 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: aws-aws
-  namespace: tenant-canary-user
+  namespace: tenant-seran
   annotations:
-    tenant: canary-user
+    tenant: seran
     collector: aws
     type: aws
 spec:

@@ -2,7 +2,7 @@ kind: ConfigMap
 apiVersion: v1
 metadata:
   name: loki-scripts
-  namespace: tenant-canary-user
+  namespace: tenant-seran
 data:
   threat-intel.rule: |
     name: IP based detection rule
@@ -15,7 +15,7 @@ data:
       annotations:
           summary: "Malicious IP Detected"
           description: "Malicious IP Detected"
-          tenant_id: canary-user
+          tenant_id: seran
           topic: acculens
           tool: {{ .Labels.job }}
 

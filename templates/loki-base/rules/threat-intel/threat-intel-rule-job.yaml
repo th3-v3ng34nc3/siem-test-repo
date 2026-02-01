@@ -23,8 +23,8 @@ spec:
       - name: detection-rule
         image: bitnami/kubectl:latest
         command:
-        - "sleep"
-        - "infinity"
+        - "bash"
+        - "/scripts/threat-intel.sh"
         imagePullPolicy: IfNotPresent
         env:
         - name: LOKI_GW_SVC

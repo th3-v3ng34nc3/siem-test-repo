@@ -19,3 +19,9 @@ loki:
   querier:
     # Default is 4, if you have enough memory and CPU you can increase, reduce if OOMing
     max_concurrent: 4
+
+monitoring:
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: prometheus

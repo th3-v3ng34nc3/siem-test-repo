@@ -7,16 +7,17 @@ prometheus:
       matchLabels:
       release: prometheus
       # Disables the default behavior of picking up everything
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: do-block-storage
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 20Gi
 defaultRules:
   enabled: false
-  storageSpec:
-    volumeClaimTemplate:
-    spec:
-      storageClassName: do-block-storage
-      accessModes: ["ReadWriteOnce"]
-      resources:
-      requests:
-          storage: 20Gi
+
 # Disable Alertmanager if you just want metrics for now
 alertmanager:
   enabled: false

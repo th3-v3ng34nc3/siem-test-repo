@@ -3,6 +3,6 @@ kind: Namespace
 metadata:
   name: tenant-canary-user
   labels:
-    tenant: canary-user
-    env: validation
-    accuknox: "3730"
+    accuknox: "999999999"
+    tenant: "canary-user"
+    env: "validation"

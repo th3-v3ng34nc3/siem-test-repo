@@ -8,7 +8,8 @@ data:
           author: toffeebr33k
           description: Detects enumeration of accounts configuration via api call to list different instances and services within a short period of time.
           summary: Account Enumeration on AWS
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i)^list.*` [1m])) or vector(0) > 0
@@ -23,7 +24,8 @@ data:
 
     '
           summary: AWS Attached Malicious Lambda Layer
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^UpdateFunctionConfiguration.*` [1m])) or vector(0) > 0
@@ -34,7 +36,8 @@ data:
           author: vitaliy0x1
           description: Detects disabling, deleting and updating of a Trail
           summary: AWS CloudTrail Important Change
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^cloudtrail\.amazonaws\.com$` and (eventName=~`(?i)^StopLogging$` or eventName=~`(?i)^UpdateTrail$` or eventName=~`(?i)^DeleteTrail$`) [1m])) or vector(0) > 0
@@ -45,7 +48,8 @@ data:
           author: vitaliy0x1
           description: Detects AWS Config Service disabling
           summary: AWS Config Disabling Channel/Recorder
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^config\.amazonaws\.com$` and (eventName=~`(?i)^DeleteDeliveryChannel$` or eventName=~`(?i)^StopConfigurationRecorder$`) [1m])) or vector(0) > 0
@@ -60,7 +64,8 @@ data:
 
     '
           summary: AWS Console GetSigninToken Potential Abuse
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^signin\.amazonaws\.com$` and eventName=~`(?i)^GetSigninToken$` and userAgent!~`(?i).*Jersey/\$\{project\.version\}.*` [1m])) or vector(0) > 0
@@ -71,7 +76,8 @@ data:
           author: Austin Songer
           description: AWS Create Load Balancer
           summary: AWS Create Load Balancer
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^elasticloadbalancing\.amazonaws\.com$` and eventName=~`(?i)^CreateLoadBalancer.*` [1m])) or vector(0) > 0
@@ -86,7 +92,8 @@ data:
 
     '
           summary: AWS EC2 Disable EBS Encryption
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and eventName=~`(?i)^DisableEbsEncryptionByDefault$` [1m])) or vector(0) > 0
@@ -97,7 +104,8 @@ data:
           author: faloker
           description: Detects bulk downloading of User Data associated with AWS EC2 instances. Instance User Data may include installation scripts and hard-coded secrets for deployment.
           summary: AWS EC2 Download Userdata
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and requestParameters_attribute=~`(?i)^userData$` and eventName=~`(?i)^DescribeInstanceAttribute$` [1m])) or vector(0) > 0
@@ -108,7 +116,8 @@ data:
           author: faloker
           description: Detects changes to the EC2 instance startup script. The shell script will be executed as root/SYSTEM every time the specific instances are booted up.
           summary: AWS EC2 Startup Shell Script Change
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and requestParameters_attribute=~`(?i)^userData$` and eventName=~`(?i)^ModifyInstanceAttribute$` [1m])) or vector(0) > 0
@@ -119,7 +128,8 @@ data:
           author: Diogo Braz
           description: An attempt to export an AWS EC2 instance has been detected. A VM Export might indicate an attempt to extract information from an instance.
           summary: AWS EC2 VM Export Failure
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i)^CreateInstanceExportTask$` and eventSource=~`(?i)^ec2\.amazonaws\.com$` and errorMessage!~`(?i).*` and errorCode!~`(?i).*` and responseElements!~`(?i).*Failure.*` [1m])) or vector(0) > 0
@@ -130,7 +140,8 @@ data:
           author: Darin Smith
           description: Detects when an Elastic Container Service (ECS) Task Definition has been modified and run. This can indicate an adversary adding a backdoor to establish persistence or escalate privileges. This rule is based on examining events created upon execution of Rhino Security Lab's Pacu in a lab environment.
           summary: AWS ECS Backdoor Task Definition
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ecs\.amazonaws\.com$` and (eventName=~`(?i)^DescribeTaskDefinition$` or eventName=~`(?i)^RegisterTaskDefinition$` or eventName=~`(?i)^RunTask$`) and requestParameters_containerDefinitions_command=~`(?i).*169\.254.*` and requestParameters_containerDefinitions_command=~`(?i).*\$AWS_CONTAINER_CREDENTIALS.*` [1m])) or vector(0) > 0
@@ -147,7 +158,8 @@ data:
 
     '
           summary: AWS EFS Fileshare Modified or Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^elasticfilesystem\.amazonaws\.com$` and eventName=~`(?i)^DeleteFileSystem$` [1m])) or vector(0) > 0
@@ -158,7 +170,8 @@ data:
           author: Austin Songer @austinsonger
           description: Detects when a EFS Fileshare Mount is modified or deleted. An adversary breaking any file system using the mount target that is being deleted, which might disrupt instances or applications using those mounts.
           summary: AWS EFS Fileshare Mount Modified or Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^elasticfilesystem\.amazonaws\.com$` and eventName=~`(?i)^DeleteMountTarget$` [1m])) or vector(0) > 0
@@ -169,7 +182,8 @@ data:
           author: Austin Songer
           description: Identifies when an EKS cluster is created or deleted.
           summary: AWS EKS Cluster Created or Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^eks\.amazonaws\.com$` and (eventName=~`(?i)^CreateCluster$` or eventName=~`(?i)^DeleteCluster$`) [1m])) or vector(0) > 0
@@ -180,7 +194,8 @@ data:
           author: Austin Songer @austinsonger
           description: Detects when an ElastiCache security group has been created.
           summary: AWS ElastiCache Security Group Created
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^elasticache\.amazonaws\.com$` and eventName=~`(?i)^CreateCacheSecurityGroup$` [1m])) or vector(0) > 0
@@ -191,7 +206,8 @@ data:
           author: Austin Songer @austinsonger
           description: Identifies when an ElastiCache security group has been modified or deleted.
           summary: AWS ElastiCache Security Group Modified or Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^elasticache\.amazonaws\.com$` and (eventName=~`(?i)^DeleteCacheSecurityGroup$` or eventName=~`(?i)^AuthorizeCacheSecurityGroupIngress$` or eventName=~`(?i)^RevokeCacheSecurityGroupIngress$` or eventName=~`(?i)^AuthorizeCacheSecurityGroupEgress$` or eventName=~`(?i)^RevokeCacheSecurityGroupEgress$`) [1m])) or vector(0) > 0
@@ -202,7 +218,8 @@ data:
           author: Austin Songer @austinsonger
           description: Detects possible suspicious glue development endpoint activity.
           summary: AWS Glue Development Endpoint Activity
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^glue\.amazonaws\.com$` and (eventName=~`(?i)^CreateDevEndpoint$` or eventName=~`(?i)^DeleteDevEndpoint$` or eventName=~`(?i)^UpdateDevEndpoint$`) [1m])) or vector(0) > 0
@@ -213,7 +230,8 @@ data:
           author: faloker
           description: Detects updates of the GuardDuty list of trusted IPs, perhaps to disable security alerts against malicious IPs.
           summary: AWS GuardDuty Important Change
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^guardduty\.amazonaws\.com$` and eventName=~`(?i)^CreateIPSet$` [1m])) or vector(0) > 0
@@ -230,7 +248,8 @@ data:
 
     '
           summary: AWS IAM Backdoor Users Keys
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^CreateAccessKey$` and userIdentity_arn!~`(?i).*responseElements\.accessKey\.userName.*` [1m])) or vector(0) > 0
@@ -241,7 +260,8 @@ data:
           author: daniel.bohannon@permiso.io (@danielhbohannon)
           description: Detects S3 Browser utility performing reconnaissance looking for existing IAM Users without a LoginProfile defined then (when found) creating a LoginProfile.
           summary: AWS IAM S3Browser LoginProfile Creation
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and (eventName=~`(?i)^GetLoginProfile$` or eventName=~`(?i)^CreateLoginProfile$`) and userAgent=~`(?i).*S3\ Browser.*` [1m])) or vector(0) > 0
@@ -252,7 +272,8 @@ data:
           author: daniel.bohannon@permiso.io (@danielhbohannon)
           description: Detects S3 browser utility creating Inline IAM policy containing default S3 bucket name placeholder value of "<YOUR-BUCKET-NAME>".
           summary: AWS IAM S3Browser Templated S3 Bucket Policy Creation
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^PutUserPolicy$` and userAgent=~`(?i).*S3\ Browser.*` and requestParameters=~`(?i).*"arn:aws:s3:::<YOUR\-BUCKET\-NAME>/.*".*` and requestParameters=~`(?i).*"s3:GetObject".*` and requestParameters=~`(?i).*"Allow".*` [1m])) or vector(0) > 0
@@ -263,7 +284,8 @@ data:
           author: daniel.bohannon@permiso.io (@danielhbohannon)
           description: Detects S3 Browser utility creating IAM User or AccessKey.
           summary: AWS IAM S3Browser User or AccessKey Creation
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and (eventName=~`(?i)^CreateUser$` or eventName=~`(?i)^CreateAccessKey$`) and userAgent=~`(?i).*S3\ Browser.*` [1m])) or vector(0) > 0
@@ -278,7 +300,8 @@ data:
 
     '
           summary: AWS Identity Center Identity Provider Change
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | (eventSource=~`(?i)^sso\-directory\.amazonaws\.com$` or eventSource=~`(?i)^sso\.amazonaws\.com$`) and (eventName=~`(?i)^AssociateDirectory$` or eventName=~`(?i)^DisableExternalIdPConfigurationForDirectory$` or eventName=~`(?i)^DisassociateDirectory$` or eventName=~`(?i)^EnableExternalIdPConfigurationForDirectory$`) [1m])) or vector(0) > 0
@@ -289,7 +312,8 @@ data:
           author: Austin Songer @austinsonger
           description: Detects when an user creates or invokes a lambda function.
           summary: AWS Lambda Function Created or Invoked
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^CreateFunction$` or eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^Invoke$` [1m])) or vector(0) > 0
@@ -300,7 +324,8 @@ data:
           author: Sittikorn S
           description: Detects evade to Macie detection.
           summary: AWS Macie Evasion
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i)^ArchiveFindings$` or eventName=~`(?i)^CreateFindingsFilter$` or eventName=~`(?i)^DeleteMember$` or eventName=~`(?i)^DisassociateFromMasterAccount$` or eventName=~`(?i)^DisassociateMember$` or eventName=~`(?i)^DisableMacie$` or eventName=~`(?i)^DisableOrganizationAdminAccount$` or eventName=~`(?i)^UpdateFindingsFilter$` or eventName=~`(?i)^UpdateMacieSession$` or eventName=~`(?i)^UpdateMemberSession$` or eventName=~`(?i)^UpdateClassificationJob$` [1m])) or vector(0) > 0
@@ -311,7 +336,8 @@ data:
           author: faloker
           description: Detects the change of database master password. It may be a part of data exfiltration.
           summary: AWS RDS Master Password Change
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^rds\.amazonaws\.com$` and responseElements_pendingModifiedValues_masterUserPassword=~`(?i).*` and eventName=~`(?i)^ModifyDBInstance$` [1m])) or vector(0) > 0
@@ -322,7 +348,8 @@ data:
           author: vitaliy0x1
           description: Detects AWS root account usage
           summary: AWS Root Credentials
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | userIdentity_type=~`(?i)^Root$` and eventType!~`(?i)^AwsServiceEvent$` [1m])) or vector(0) > 0
@@ -333,7 +360,8 @@ data:
           author: Elastic, Austin Songer @austinsonger
           description: Detects when a transfer lock was removed from a Route 53 domain. It is recommended to refrain from performing this action unless intending to transfer the domain to a different registrar.
           summary: AWS Route 53 Domain Transfer Lock Disabled
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^route53\.amazonaws\.com$` and eventName=~`(?i)^DisableDomainTransferLock$` [1m])) or vector(0) > 0
@@ -344,7 +372,8 @@ data:
           author: Elastic, Austin Songer @austinsonger
           description: Detects when a request has been made to transfer a Route 53 domain to another AWS account.
           summary: AWS Route 53 Domain Transferred to Another Account
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^route53\.amazonaws\.com$` and eventName=~`(?i)^TransferDomainToAnotherAwsAccount$` [1m])) or vector(0) > 0
@@ -355,7 +384,8 @@ data:
           author: Sean Johnstone | Unit 42
           description: Detects when S3 bucket versioning is disabled. Threat actors use this technique during AWS ransomware incidents prior to deleting S3 objects.
           summary: AWS S3 Bucket Versioning Disable
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^PutBucketVersioning$` and requestParameters=~`(?i).*Suspended.*` [1m])) or vector(0) > 0
@@ -366,7 +396,8 @@ data:
           author: Sean Johnstone | Unit 42
           description: Detects when S3 bucket versioning is disabled. Threat actors use this technique during AWS ransomware incidents prior to deleting S3 objects.
           summary: AWS S3 Bucket Versioning
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^PutBucketVersioning$` [1m])) or vector(0) > 0
@@ -376,7 +407,8 @@ data:
         annotations:
           description: AWS S3 made public
           summary: AWS S3 made public
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i).*PutBucketPublicAccessBlock.*` [1m])) or vector(0) > 0
@@ -387,7 +419,8 @@ data:
           author: Murtaza Udaipurwala
           description: Detects when an ingress allow rule is added or modified.
           summary: AWS Security Group Port Opened
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and (eventName=~`(?i)^AuthorizeSecurityGroupIngress$` or eventName=~`(?i)^ModifySecurityGroupRules$`) [1m])) or vector(0) > 0
@@ -398,7 +431,8 @@ data:
           author: Sittikorn S
           description: Detects the modification of the findings on SecurityHub.
           summary: AWS SecurityHub Findings Evasion
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^securityhub\.amazonaws\.com$` and (eventName=~`(?i)^BatchUpdateFindings$` or eventName=~`(?i)^DeleteInsight$` or eventName=~`(?i)^UpdateFindings$` or eventName=~`(?i)^UpdateInsight$`) [1m])) or vector(0) > 0
@@ -409,7 +443,8 @@ data:
           author: Darin Smith
           description: Detects the modification of an EC2 snapshot's permissions to enable access from another account
           summary: AWS Snapshot Backup Exfiltration
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and eventName=~`(?i)^ModifySnapshotAttribute$` [1m])) or vector(0) > 0
@@ -420,7 +455,8 @@ data:
           author: Austin Songer @austinsonger
           description: Identifies the suspicious use of GetSessionToken. Tokens could be created and used by attackers to move laterally and escalate privileges.
           summary: AWS STS GetSessionToken Misuse
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^sts\.amazonaws\.com$` and eventName=~`(?i)^GetSessionToken$` and userIdentity_type=~`(?i)^IAMUser$` [1m])) or vector(0) > 0
@@ -431,7 +467,8 @@ data:
           author: Austin Songer
           description: Identifies when suspicious SAML activity has occurred in AWS. An adversary could gain backdoor access via SAML.
           summary: AWS Suspicious SAML Activity
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^sts\.amazonaws\.com$` and eventName=~`(?i)^AssumeRoleWithSAML$` or eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^UpdateSAMLProvider$` [1m])) or vector(0) > 0
@@ -446,7 +483,8 @@ data:
 
     '
           summary: AWS User Login Profile Was Modified
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^UpdateLoginProfile$` and userIdentity_arn!~`(?i).*requestParameters\.userName.*` [1m])) or vector(0) > 0
@@ -456,7 +494,8 @@ data:
         annotations:
           description: AWS vm created
           summary: AWS vm created
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i)^RunInstances$` [1m])) or vector(0) > 0
@@ -467,7 +506,8 @@ data:
           author: Christopher Peacock @securepeacock, SCYTHE @scythe_io
           description: Looks for potential enumeration of AWS buckets via ListBuckets.
           summary: Potential Bucket Enumeration on AWS
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^ListBuckets$` and type!~`(?i)^AssumedRole$` [1m])) or vector(0) > 0
@@ -478,7 +518,8 @@ data:
           author: faloker
           description: Detects the recovery of a new public database instance from a snapshot. It may be a part of data exfiltration.
           summary: Restore Public AWS RDS Instance
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^rds\.amazonaws\.com$` and responseElements_publiclyAccessible=~`(?i)^true$` and eventName=~`(?i)^RestoreDBInstanceFromDBSnapshot$` [1m])) or vector(0) > 0
@@ -489,7 +530,8 @@ data:
           author: Janantha Marasinghe
           description: Detects an instance of an SES identity being deleted via the "DeleteIdentity" event. This may be an indicator of an adversary removing the account that carried out suspicious or malicious activities
           summary: SES Identity Has Been Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: cloudtrail
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ses\.amazonaws\.com$` and eventName=~`(?i)^DeleteIdentity$` [1m])) or vector(0) > 0
@@ -503,7 +545,8 @@ data:
           author: Austin Songer
           description: Identifies when a application gateway is modified or deleted.
           summary: Azure Application Gateway Modified or Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/APPLICATIONGATEWAYS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/APPLICATIONGATEWAYS/DELETE$` [1m])) or vector(0) > 0
@@ -514,7 +557,8 @@ data:
           author: Austin Songer
           description: Identifies when a application security group is modified or deleted.
           summary: Azure Application Security Group Modified or Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/APPLICATIONSECURITYGROUPS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/APPLICATIONSECURITYGROUPS/DELETE$` [1m])) or vector(0) > 0
@@ -525,7 +569,8 @@ data:
           author: Austin Songer @austinsonger
           description: Detects when a Container Registry is created or deleted.
           summary: Azure Container Registry Created or Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.CONTAINERREGISTRY/REGISTRIES/WRITE$` or operationName=~`(?i)^MICROSOFT\.CONTAINERREGISTRY/REGISTRIES/DELETE$` [1m])) or vector(0) > 0
@@ -536,7 +581,8 @@ data:
           author: Austin Songer @austinsonger
           description: Identifies when a device in azure is no longer managed or compliant
           summary: Azure Device No Longer Managed or Compliant
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | properties_message=~`(?i)^Device\ no\ longer\ compliant$` or properties_message=~`(?i)^Device\ no\ longer\ managed$` [1m])) or vector(0) > 0
@@ -547,7 +593,8 @@ data:
           author: Austin Songer @austinsonger
           description: Identifies when a device or device configuration in azure is modified or deleted.
           summary: Azure Device or Configuration Modified or Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | properties_message=~`(?i)^Delete\ device$` or properties_message=~`(?i)^Delete\ device\ configuration$` or properties_message=~`(?i)^Update\ device$` or properties_message=~`(?i)^Update\ device\ configuration$` [1m])) or vector(0) > 0
@@ -558,7 +605,8 @@ data:
           author: Austin Songer @austinsonger
           description: Identifies when DNS zone is modified or deleted.
           summary: Azure DNS Zone Modified or Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/DNSZONES.*` and (operationName=~`(?i).*/WRITE$` or operationName=~`(?i).*/DELETE$`) [1m])) or vector(0) > 0
@@ -569,7 +617,8 @@ data:
           author: Austin Songer @austinsonger
           description: Identifies when a firewall is created, modified, or deleted.
           summary: Azure Firewall Modified or Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/DELETE$` [1m])) or vector(0) > 0
@@ -580,7 +629,8 @@ data:
           author: Austin Songer @austinsonger
           description: Identifies when Rule Collections (Application, NAT, and Network) is being modified or deleted.
           summary: Azure Firewall Rule Collection Modified or Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/APPLICATIONRULECOLLECTIONS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/APPLICATIONRULECOLLECTIONS/DELETE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/NATRULECOLLECTIONS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/NATRULECOLLECTIONS/DELETE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/NETWORKRULECOLLECTIONS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/NETWORKRULECOLLECTIONS/DELETE$` [1m])) or vector(0) > 0
@@ -591,7 +641,8 @@ data:
           author: Austin Songer @austinsonger
           description: Identifies when a Firewall Rule Configuration is Modified or Deleted.
           summary: Azure Firewall Rule Configuration Modified or Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/RULECOLLECTIONGROUPS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/RULECOLLECTIONGROUPS/DELETE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/RULEGROUPS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/RULEGROUPS/DELETE$` [1m])) or vector(0) > 0
@@ -602,7 +653,8 @@ data:
           author: Austin Songer @austinsonger
           description: Identifies when a Keyvault Key is modified or deleted in Azure.
           summary: Azure Keyvault Key Modified or Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/UPDATE/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/CREATE$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/CREATE/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/IMPORT/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/RECOVER/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/RESTORE/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/DELETE$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/BACKUP/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/PURGE/ACTION$` [1m])) or vector(0) > 0
@@ -613,7 +665,8 @@ data:
           author: Austin Songer @austinsonger
           description: Identifies when secrets are modified or deleted in Azure.
           summary: Azure Keyvault Secrets Modified or Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/WRITE$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/DELETE$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/BACKUP/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/PURGE/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/UPDATE/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/RECOVER/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/RESTORE/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/SETSECRET/ACTION$` [1m])) or vector(0) > 0
@@ -624,7 +677,8 @@ data:
           author: Austin Songer @austinsonger
           description: Identifies when a Firewall Policy is Modified or Deleted.
           summary: Azure Network Firewall Policy Modified or Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/JOIN/ACTION$` or operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/CERTIFICATES/ACTION$` or operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/DELETE$` [1m])) or vector(0) > 0
@@ -635,7 +689,8 @@ data:
           author: Murtaza Udaipurwala
           description: Detects when an inbound rule is added or modified for a NSG
           summary: Azure Network Security Group Inbound Rule Added or Modified
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i).*WRITE$` and operationName=~`(?i)^MICROSOFT\.NETWORK/NETWORKSECURITYGROUPS.*` [1m])) or vector(0) > 0
@@ -646,7 +701,8 @@ data:
           author: Austin Songer
           description: Identifies when a new cloudshell is created inside of Azure portal.
           summary: Azure New CloudShell Created
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.PORTAL/CONSOLES/WRITE$` [1m])) or vector(0) > 0
@@ -657,7 +713,8 @@ data:
           author: Austin Songer @austinsonger
           description: Identifies when a owner is was removed from a application or service principal in Azure.
           summary: Azure Owner Removed From Application or Service Principal
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | properties_message=~`(?i)^Remove\ owner\ from\ service\ principal$` or properties_message=~`(?i)^Remove\ owner\ from\ application$` [1m])) or vector(0) > 0
@@ -668,7 +725,8 @@ data:
           author: Austin Songer @austinsonger
           description: Identifies when a Point-to-site VPN is Modified or Deleted.
           summary: Azure Point-to-site VPN Modified or Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/P2SVPNGATEWAYS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/P2SVPNGATEWAYS/DELETE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/P2SVPNGATEWAYS/RESET/ACTION$` or operationName=~`(?i)^MICROSOFT\.NETWORK/P2SVPNGATEWAYS/GENERATEVPNPROFILE/ACTION$` or operationName=~`(?i)^MICROSOFT\.NETWORK/P2SVPNGATEWAYS/DISCONNECTP2SVPNCONNECTIONS/ACTION$` or operationName=~`(?i)^MICROSOFT\.NETWORK/P2SVPNGATEWAYS/PROVIDERS/MICROSOFT\.INSIGHTS/DIAGNOSTICSETTINGS/WRITE$` [1m])) or vector(0) > 0
@@ -679,7 +737,8 @@ data:
           author: Austin Songer @austinsonger
           description: Identifies when a service principal is created in Azure.
           summary: Azure Service Principal Created
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | properties_message=~`(?i)^Add\ service\ principal$` [1m])) or vector(0) > 0
@@ -690,7 +749,8 @@ data:
           author: Austin Songer @austinsonger
           description: Identifies when a service principal was removed in Azure.
           summary: Azure Service Principal Removed
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | properties_message=~`(?i)^Remove\ service\ principal$` [1m])) or vector(0) > 0
@@ -700,7 +760,8 @@ data:
         annotations:
           description: Azure storage configuration updated
           summary: Azure storage configuration updated
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.STORAGE/STORAGEACCOUNTS/BLOBSERVICES/CONTAINERS/WRITE$` and records_resultType=~`(?i)^Success$` [1m])) or vector(0) > 0
@@ -711,7 +772,8 @@ data:
           author: Austin Songer
           description: Identifies when a suppression rule is created in Azure. Adversary's could attempt this to evade detection.
           summary: Azure Suppression Rule Created
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.SECURITY/ALERTSSUPPRESSIONRULES/WRITE$` [1m])) or vector(0) > 0
@@ -721,7 +783,8 @@ data:
         annotations:
           description: Azure vm created
           summary: Azure vm created
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.COMPUTE/VIRTUALMACHINES.*` and operationName=~`(?i).*/WRITE$` and resultType=~`(?i)^Success$` [1m])) or vector(0) > 0
@@ -732,7 +795,8 @@ data:
           author: Austin Songer @austinsonger
           description: Identifies when a VPN connection is modified or deleted.
           summary: Azure VPN Connection Modified or Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/VPNGATEWAYS/VPNCONNECTIONS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/VPNGATEWAYS/VPNCONNECTIONS/DELETE$` [1m])) or vector(0) > 0
@@ -743,7 +807,8 @@ data:
           author: sawwinnnaung
           description: Identifies IPs from which users grant access to other users on azure resources and alerts when a previously unseen source IP address is used.
           summary: Granting Of Permissions To An Account
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: azurelog
         expr: sum(count_over_time({job="azurelog"} |~ `(?i)Microsoft\.Authorization/roleAssignments/write` [1m])) or vector(0) > 0
@@ -756,7 +821,8 @@ data:
         annotations:
           description: Connection from non authorized geo-location
           summary: Connection from non authorized geo-location
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | country_iso_code=~`(?i).*IN.*` or continent_code=~`(?i).*AS.*` or continent_code=~`(?i).*ASA.*` [1m])) or vector(0) > 0
@@ -766,7 +832,8 @@ data:
         annotations:
           description: GCP bucket configuration updated
           summary: GCP bucket configuration updated
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | methodName=~`(?i)^storage\.buckets\.update$` [1m])) or vector(0) > 0
@@ -777,7 +844,8 @@ data:
           author: suryatyagi@accuknox.com
           description: Detects creation of a VPC firewall rule or policy, potentially exposing new ports.
           summary: GCP Firewall Rule Created or Policy Rule Added
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | (protoPayload_methodName=~`(?i)^beta\.compute\.firewalls\.insert$` or protoPayload_methodName=~`(?i)^v1\.compute\.firewalls\.patch$` or protoPayload_methodName=~`(?i)^beta\.compute\.networkFirewallPolicies\.addRule$` or protoPayload_methodName=~`(?i)^beta\.compute\.networkFirewallPolicies\.patchRule$`) and resource_type=~`(?i)^gce_firewall_rule$` and operation_first=~`(?i)^true$` [1m])) or vector(0) > 0
@@ -788,7 +856,8 @@ data:
           author: suryatyagi@accuknox.com
           description: Detects when a user or service account is assigned an admin/owner/editor role in GCP.
           summary: GCP User Granted Admin Role
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | (protoPayload_methodName=~`(?i)^SetIamPolicy$` or protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.SetIamPolicy$` or protoPayload_methodName=~`(?i)^google\.cloud\.resourcemanager\.v1\.SetIamPolicy$`) and protoPayload_serviceData_policyDelta_bindingDeltas_action=~`(?i)^ADD$` and protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i)^roles/owner$` or (protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateServiceAccount$` or protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateUser$`) and protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i)^roles/owner$` [1m])) or vector(0) > 0
@@ -798,7 +867,8 @@ data:
         annotations:
           description: gcp vm created
           summary: gcp vm created
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | protoPayload_methodName=~`(?i)^beta\.compute\.instances\.insert$` [1m])) or vector(0) > 0
@@ -809,7 +879,8 @@ data:
           author: suryatyagi@accuknox.com
           description: Detects deletion of a Virtual Private Cloud (VPC) network in Google Cloud Platform via Audit Logs.
           summary: GCP VPC Network Deletion
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | protoPayload_methodName=~`(?i)^v1\.compute\.networks\.delete$` [1m])) or vector(0) > 0
@@ -820,7 +891,8 @@ data:
           author: suryatyagi@accuknox.com
           description: Detects the creation of a custom VPC route in GCP using Audit Logs.
           summary: GCP VPC Route Created
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | protoPayload_methodName=~`(?i)^v1\.compute\.routes\.insert$` and resource_type=~`(?i)^gce_route$` [1m])) or vector(0) > 0
@@ -831,7 +903,8 @@ data:
           author: suryatyagi@accuknox.com
           description: Detects the deletion of a custom VPC route in GCP using Audit Logs.
           summary: GCP VPC Route Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | protoPayload_methodName=~`(?i)^v1\.compute\.routes\.delete$` and resource_type=~`(?i)^gce_route$` [1m])) or vector(0) > 0
@@ -842,7 +915,8 @@ data:
           author: Murtaza Udaipurwala
           description: Detects when an IAM custom role is created in Google Cloud.
           summary: Google Cloud IAM Custom Role Created
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateRole$` or gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.UndeleteRole$` [1m])) or vector(0) > 0
@@ -853,7 +927,8 @@ data:
           author: Murtaza Udaipurwala
           description: Detects when an IAM custom role is deleted in Google Cloud.
           summary: Google Cloud IAM Custom Role Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.DeleteRole$` and gcp_audit_protoPayload_response_deleted=~`(?i)^true$` [1m])) or vector(0) > 0
@@ -864,7 +939,8 @@ data:
           author: Murtaza Udaipurwala
           description: Detects when an IAM member is assigned an owner or admin role in Google Cloud.
           summary: Google Cloud IAM Member Assigned Owner OR Admin Role
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_action=~`(?i)^ADD$` and gcp_audit_protoPayload_methodName=~`(?i)^SetIamPolicy$` and (gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/resourcemanager\.organizationAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/resourcemanager\.projectIamAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/accesscontextmanager\.policyAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/axt\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/actions\.Admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/serviceconsumermanagement\.tenancyUnitsAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/advisorynotifications\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/recommender\.alloydbAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.listingAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/gkemulticloud\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.jobOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.modelOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.operationOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.subscriptionOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/bigquery\.dataOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/certificatemanager\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/chat\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudasset\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudbuild\.integrationsOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudbuild\.workerPoolOwner.*`) [1m])) or vector(0) > 0
@@ -875,7 +951,8 @@ data:
           author: Murtaza Udaipurwala
           description: Detects when a logging bucket is created in Google Cloud.
           summary: Google Cloud Logging Bucket Created
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.CreateBucket$` or gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UndeleteBucket$` [1m])) or vector(0) > 0
@@ -886,7 +963,8 @@ data:
           author: Murtaza Udaipurwala
           description: Detects when a logging bucket is deleted in Google Cloud.
           summary: Google Cloud Logging Bucket Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.DeleteBucket$` [1m])) or vector(0) > 0
@@ -897,7 +975,8 @@ data:
           author: Murtaza Udaipurwala
           description: Detects when a logging bucket is modified in Google Cloud.
           summary: Google Cloud Logging Bucket Modified
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UpdateBucket$` [1m])) or vector(0) > 0
@@ -908,7 +987,8 @@ data:
           author: pratheep
           description: Detects when a Cloud Logging sink is deleted in Google Cloud.
           summary: Google Cloud Logging Sink Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.DeleteSink$` [1m])) or vector(0) > 0
@@ -919,7 +999,8 @@ data:
           author: Pratheep
           description: Detects when a Logging sink is updated in Google Cloud.
           summary: Google Cloud Logging Sink Updated
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UpdateSink$` [1m])) or vector(0) > 0
@@ -930,7 +1011,8 @@ data:
           author: Murtaza Udaipurwala
           description: Detects when a Service Account key is created in Google Cloud.
           summary: Google Cloud Service Account Key Created
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateServiceAccountKey$` [1m])) or vector(0) > 0
@@ -941,7 +1023,8 @@ data:
           author: Murtaza Udaipurwala
           description: Detects when a Service Account key is deleted in Google Cloud.
           summary: Google Cloud Service Account Key Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.DeleteServiceAccountKey$` [1m])) or vector(0) > 0
@@ -952,7 +1035,8 @@ data:
           author: Murtaza Udaipurwala
           description: Detects when a storage bucket's IAM permission is modified in Google Cloud.
           summary: Google Cloud Storage Bucket's IAM Permissions Modified
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^storage\.setIamPermissions$` [1m])) or vector(0) > 0
@@ -963,7 +1047,8 @@ data:
           author: Austin Songer @austinsonger
           description: Detects when storage bucket is created in Google Cloud.
           summary: Google Cloud Storage Buckets Created
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_method_name=~`(?i)^storage\.buckets\.insert$` or gcp_audit_method_name=~`(?i)^storage\.buckets\.create$` [1m])) or vector(0) > 0
@@ -974,7 +1059,8 @@ data:
           author: Austin Songer @austinsonger
           description: Detects when storage bucket is modified or deleted in Google Cloud.
           summary: Google Cloud Storage Buckets Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_method_name=~`(?i)^storage\.buckets\.delete$` [1m])) or vector(0) > 0
@@ -985,7 +1071,8 @@ data:
           author: Austin Songer @austinsonger
           description: Detects when storage bucket is modified or deleted in Google Cloud.
           summary: Google Cloud Storage Buckets Modified or Deleted
-          tenant_id: threat-intel
+          tenant: validation-seran
+          accuknox: 3730
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_method_name=~`(?i)^storage\.buckets\.insert$` or gcp_audit_method_name=~`(?i)^storage\.buckets\.create$` [1m])) or vector(0) > 0
@@ -995,4 +1082,4 @@ kind: ConfigMap
 metadata:
   creationTimestamp: null
   name: tenant-detection-rules
-  namespace: tenant-threat-intel
+  namespace: tenant-seran

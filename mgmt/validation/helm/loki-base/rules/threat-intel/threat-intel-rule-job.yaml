@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: threat-intel-rule-oneoff
+  name: threat-intel-rule-cron
   namespace: loki
 spec:
   backoffLimit: 3          # Max retries
