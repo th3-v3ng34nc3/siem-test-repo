@@ -250,6 +250,7 @@ cat <<EOF | $SCRIPT_DIR/add_tenant.sh
 $ENV_NAME
 canary-user
 $ENV_NAME canary user
+999999999
 y
 EOF
 if [ $? -eq 0 ]; then

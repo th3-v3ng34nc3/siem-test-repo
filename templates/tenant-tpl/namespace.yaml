@@ -3,5 +3,6 @@ kind: Namespace
 metadata:
   name: tenant-<tenant_id>
   labels:
-    tenant: <tenant_id>
-    env: <env_id>
+    accuknox: "<accuknox_id>"
+    tenant: "<tenant_id>"
+    env: "<env_id>"

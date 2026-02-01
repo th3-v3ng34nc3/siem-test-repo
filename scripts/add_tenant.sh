@@ -39,9 +39,7 @@ if [ ! -d "$DIR_LOC/$ENV_ID" ]; then
     exit 1
 fi
 
-# --- 3. Tenant ID Input and Validation ---
-# Tenant ID must be a positive integer, strictly higher than 0
-read -p "Enter the Tenant ID: " TENANT_ID
+read -p "Enter the Tenant ID (Tenant ID is not Accuknox SaaS ID): " TENANT_ID
 
 if [[ ! $TENANT_ID =~ $DNS_REGEX ]]; then
     echo "Error: Tenant ID is not DNS compliant (use lowercase, numbers, and hyphens."
@@ -49,6 +47,7 @@ if [[ ! $TENANT_ID =~ $DNS_REGEX ]]; then
 fi
 
 read -p "Enter the Tenant Name: " TENANT_NAME
+read -p "Enter the Tenant Accuknox SaaS ID: " TENANT_AK_ID
 
 # --- 4. Confirmation and Creation ---
 TARGET_PATH="$DIR_LOC/$ENV_ID/$TENANT_ID"
@@ -56,6 +55,7 @@ TARGET_PATH="$DIR_LOC/$ENV_ID/$TENANT_ID"
 echo "-----------------------------------------------------"
 echo "Tenant Name: $TENANT_NAME"
 echo "Target Name: $TARGET_PATH"
+echo "SaaS ID: $TENANT_AK_ID"
 echo "Action: Creating new tenant"
 echo "-----------------------------------------------------"
 
@@ -94,6 +94,7 @@ create_tenant_secret "loki_tenant" "username=$USERNAME" "password=$PASSWORD" "en
 cat << EOF > $TARGET_PATH/info
 Tenant Name: $TENANT_NAME
 Endpoint: $INGEST_ENDPOINT
+SaaS ID: $TENANT_AK_ID
 EOF
 
 echo "Adding k8s templates"
@@ -109,6 +110,8 @@ else
     yq '.resources |= ( . + ["'$TENANT_ID'"] | unique)' -i "$TENANT_RULE_TPL/../kustomization.yaml"
     find "$TENANT_TPL" -type f -exec sed -i '' -e "s#<tenant_id>#$TENANT_ID#g" {} \;
     find "$TENANT_TPL" -type f -exec sed -i '' -e "s#<env_id>#$ENV_ID#g" {} \;
+    find "$TENANT_TPL" -type f -exec sed -i '' -e "s#<accuknox_id>#$TENANT_AK_ID#g" {} \;
+    find "$TENANT_RULE_TPL" -type f -exec sed -i '' -e "s#<accuknox_id>#$TENANT_AK_ID#g" {} \;
     find "$TENANT_RULE_TPL" -type f -exec sed -i '' -e "s#<tenant_id>#$TENANT_ID#g" {} \;
     find "$TENANT_RULE_TPL" -type f -exec sed -i '' -e "s#<env_id>#$ENV_ID#g" {} \;
 fi

@@ -42,8 +42,10 @@ do
     if [[ "$tenant" == "kustomization.yaml" ]]; then
       continue
     fi
+    TENANT_AK_ID=$(cat "$DIR_LOC/$ENV_ID/$tenant/info" | grep "SaaS ID" | sed "s/SaaS ID: //g")
     echo Processing tenant $tenant
     kubectl create cm tenant-detection-rules  -n "tenant-$tenant" --dry-run=client -o yaml --from-file="$COMMON_RULES_DIR" > "$TENANTS_DIR/$tenant/detection-rules.yaml"
     kubectl create cm tenant-custom-detection-rules  -n "tenant-$tenant" --dry-run=client -o yaml --from-file="$TENANTS_DIR/$tenant/custom" > "$TENANTS_DIR/$tenant/custom-detection-rules.yaml"
-    find "$TENANTS_DIR/$tenant" -type f -exec sed -i '' -e "s#<tenant_id>#$tenant#g" {} \;
+    find "$TENANTS_DIR/$tenant" -type f -exec sed -i '' -e "s#<tenant_id>#$ENV_ID-$tenant#g" {} \;
+    find "$TENANTS_DIR/$tenant" -type f -exec sed -i '' -e "s#<accuknox_id>#$TENANT_AK_ID#g" {} \;
 done

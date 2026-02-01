@@ -5,3 +5,4 @@ metadata:
   labels:
     tenant: canary-user
     env: validation
+    accuknox: "3730"

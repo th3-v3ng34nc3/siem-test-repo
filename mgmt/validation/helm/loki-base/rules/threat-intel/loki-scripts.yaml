@@ -17,6 +17,7 @@ data:
           description: "Malicious IP Detected"
           tenant: $tenant
           topic: acculens
+          accuknox: $accuknox
           tool: |
             {{ .Labels.job }}
   threat-intel.sh: |  
@@ -29,7 +30,8 @@ data:
       env=$(kubectl get ns $ns -o jsonpath='{.metadata.labels.env}')
       user=$(echo $ns | sed "s/^tenant-//g")
       export tenant="$env-$user"
-      echo "Processing Tenant= $tenant"
+      export accuknox=$(kubectl get ns $ns -o jsonpath='{.metadata.labels.accuknox}')
+      echo "Processing Tenant=$tenant"
       envsubst < threat-intel.rule > $TMP_FILE
       response=$(curl -H"X-Scope-OrgID: $tenant" -X POST -H "Content-Type: application/yaml" --data-binary "@$TMP_FILE" "$LOKI_GW_SVC/loki/api/v1/rules/threat-intel")
       if [[ "$response" == *'"status":"success"'* ]]; then
