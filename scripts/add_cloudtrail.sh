@@ -102,4 +102,10 @@ else
     exit 1
 fi
 
+EXT=$(openssl rand -base64 32 | sha256sum | awk '{print $1 }'| head -c 5)
+USERNAME="$ENV_ID-$TENANT_ID-$INTEGRATION_ID-$EXT"
+PASSWORD=$(openssl rand -base64 32)
+
+create_tenant_secret "aws/$INTEGRATION_ID/creds" "username=$USERNAME" "password=$PASSWORD"
+
 echo "Integration added"
