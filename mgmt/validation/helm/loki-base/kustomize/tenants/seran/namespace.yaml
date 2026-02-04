@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: tenant-seran
-  labels:
-    accuknox: "3730"
-    tenant: "seran"
-    env: "validation"

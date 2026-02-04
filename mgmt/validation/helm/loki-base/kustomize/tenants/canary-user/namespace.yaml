@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: tenant-canary-user
-  labels:
-    accuknox: "999999999"
-    tenant: "canary-user"
-    env: "validation"

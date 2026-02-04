@@ -1,5 +1,0 @@
-resources:
-- http-external-secrets-cgf.yaml
-- service.yaml
-- httproute.yaml
-- deployment.yaml

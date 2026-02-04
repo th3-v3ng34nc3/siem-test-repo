@@ -1,6 +1,0 @@
-
-resources:
-- detection-rules.yaml
-- custom-detection-rules.yaml
-- detection-rule-job.yaml
-- loki-scripts.yaml

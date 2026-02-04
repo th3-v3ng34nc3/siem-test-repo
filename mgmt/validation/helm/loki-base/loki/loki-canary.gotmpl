@@ -1,8 +1,0 @@
-lokiCanary:
-  labelname: accuknox_loki_cannay_label
-  kind: Deployment
-  replicas: 1
-  extraArgs:
-    - "-user={{ .Values.canary.username }}"
-    - "-pass={{ .Values.canary.password }}"
-    - "-tenant-id={{ .Values.canary.username }}"

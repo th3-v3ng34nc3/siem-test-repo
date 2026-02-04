@@ -1,6 +1,0 @@
-
-loki:
-  auth_enabled: true
-  tenants: {}
-  #  - name: accuknox-test
-  #    password: password

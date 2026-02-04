@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: tenant-cloudguardian
-  labels:
-    accuknox: "7492"
-    tenant: "cloudguardian"
-    env: "validation"

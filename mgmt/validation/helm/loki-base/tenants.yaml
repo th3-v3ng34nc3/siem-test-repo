@@ -1,7 +1,0 @@
-tenants:
-  - tenant: ref+vault://siem/validation/tenants/canary-user/loki_tenant/#username
-    password: ref+vault://siem/validation/tenants/canary-user/loki_tenant/#password
-  - tenant: ref+vault://siem/validation/tenants/seran/loki_tenant/#username
-    password: ref+vault://siem/validation/tenants/seran/loki_tenant/#password
-  - tenant: ref+vault://siem/validation/tenants/cloudguardian/loki_tenant/#username
-    password: ref+vault://siem/validation/tenants/cloudguardian/loki_tenant/#password

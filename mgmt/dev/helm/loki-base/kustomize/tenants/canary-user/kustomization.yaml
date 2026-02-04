@@ -1,5 +1,0 @@
-
-resources:
-- namespace.yaml
-- tenant-htpasswd.yaml
-- collectors/

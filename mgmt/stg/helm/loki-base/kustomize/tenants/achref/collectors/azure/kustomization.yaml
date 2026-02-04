@@ -1,4 +1,0 @@
-resources:
-- deployment.yaml
-- azure-alloy-secrets-cgf.yaml
-- azure-logstash-config-external-secrets.yaml

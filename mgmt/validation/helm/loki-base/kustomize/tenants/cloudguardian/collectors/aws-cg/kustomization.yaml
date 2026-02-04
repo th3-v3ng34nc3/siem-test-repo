@@ -1,6 +1,0 @@
-resources:
-- aws-external-secrets-cgf.yaml
-- aws-logstash-config-external-secrets.yaml
-- service.yaml
-- httproute.yaml
-- deployment.yaml
