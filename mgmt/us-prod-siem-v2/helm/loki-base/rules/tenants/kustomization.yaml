@@ -2,3 +2,4 @@
 resources:
   - canary-user
   - yoma-fleet
+  - validation

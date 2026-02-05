@@ -3,3 +3,5 @@ tenants:
     password: ref+vault://siem/us-prod-siem-v2/tenants/canary-user/loki_tenant/#password
   - tenant: ref+vault://siem/us-prod-siem-v2/tenants/yoma-fleet/loki_tenant/#username
     password: ref+vault://siem/us-prod-siem-v2/tenants/yoma-fleet/loki_tenant/#password
+  - tenant: ref+vault://siem/us-prod-siem-v2/tenants/validation/loki_tenant/#username
+    password: ref+vault://siem/us-prod-siem-v2/tenants/validation/loki_tenant/#password

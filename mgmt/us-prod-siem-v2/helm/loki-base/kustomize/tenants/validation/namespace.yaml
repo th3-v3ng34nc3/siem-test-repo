@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tenant-validation
+  labels:
+    accuknox: "1156"
+    tenant: "validation"
+    env: "us-prod-siem-v2"

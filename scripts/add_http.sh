@@ -15,7 +15,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo $ENVS_DIR
-
+vault_check_connect
 # Define the base location using the git root
 DIR_LOC="$ENVS_DIR/$DIR_PREFIX"
 TPL_LOC="$ENVS_DIR/templates"
