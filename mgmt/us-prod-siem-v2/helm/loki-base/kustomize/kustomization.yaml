@@ -1,0 +1,6 @@
+
+resources:
+- externalsecrets.yaml
+- issuer.yaml
+- gateway.yaml
+- tenants/

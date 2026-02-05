@@ -1,0 +1,82 @@
+
+deploymentMode: Distributed
+
+# Disable minio storage
+minio:
+    enabled: false
+ingester:
+  replicas: 3
+  kind: StatefulSet
+  persistence:
+    enabled: true
+    claims:
+      - name: data
+        accessModes:
+          - ReadWriteOnce
+        size: 15Gi
+  zoneAwareReplication:
+    enabled: false
+  chunk_encoding: snappy
+querier:
+  replicas: 3
+  maxUnavailable: 2
+  max_concurrent: 4
+queryFrontend:
+  replicas: 1
+  maxUnavailable: 1
+queryScheduler:
+  replicas: 1
+distributor:
+  replicas: 3
+  maxUnavailable: 1
+compactor:
+  replicas: 1
+indexGateway:
+  replicas: 2
+  maxUnavailable: 1
+
+bloomPlanner:
+  replicas: 0
+bloomBuilder:
+  replicas: 0
+bloomGateway:
+  replicas: 0
+
+backend:
+  replicas: 0
+read:
+  replicas: 0
+write:
+  replicas: 0
+
+singleBinary:
+  replicas: 0
+
+ruler:
+  replicas: 3
+  maxUnavailable: 1
+  persistence:
+    enabled: true
+    claims:
+      - name: data
+        accessModes:
+          - ReadWriteOnce
+        size: 15Gi
+
+chunksCache:
+  enabled: true
+  allocatedMemory: 500
+  l2:
+    allocatedMemory: 500
+    enabled: true
+
+resultsCache:
+  enabled: true
+  allocatedMemory: 500
+
+gateway:
+  replicas: 2
+  service:
+    type: ClusterIP
+  basicAuth:
+    enabled: true

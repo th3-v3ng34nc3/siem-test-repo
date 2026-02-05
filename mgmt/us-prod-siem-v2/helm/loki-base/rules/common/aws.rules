@@ -1,0 +1,536 @@
+name: AWS
+rules:
+  - alert: Account_Enumeration_on_AWS
+    annotations:
+      author: toffeebr33k
+      description: Detects enumeration of accounts configuration via api call to list different instances and services within a short period of time.
+      summary: Account Enumeration on AWS
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i)^list.*` [1m])) or vector(0) > 0
+    labels:
+      severity: low
+  - alert: AWS_Attached_Malicious_Lambda_Layer
+    annotations:
+      author: Austin Songer
+      description: 'Detects when an user attached a Lambda layer to an existing function to override a library that is in use by the function, where their malicious code could utilize the function''s IAM role for AWS API calls.
+
+        This would give an adversary access to the privileges associated with the Lambda service role that is attached to that function.
+
+'
+      summary: AWS Attached Malicious Lambda Layer
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^UpdateFunctionConfiguration.*` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: AWS_CloudTrail_Important_Change
+    annotations:
+      author: vitaliy0x1
+      description: Detects disabling, deleting and updating of a Trail
+      summary: AWS CloudTrail Important Change
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^cloudtrail\.amazonaws\.com$` and (eventName=~`(?i)^StopLogging$` or eventName=~`(?i)^UpdateTrail$` or eventName=~`(?i)^DeleteTrail$`) [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: AWS_Config_Disabling_Channel_Recorder
+    annotations:
+      author: vitaliy0x1
+      description: Detects AWS Config Service disabling
+      summary: AWS Config Disabling Channel/Recorder
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^config\.amazonaws\.com$` and (eventName=~`(?i)^DeleteDeliveryChannel$` or eventName=~`(?i)^StopConfigurationRecorder$`) [1m])) or vector(0) > 0
+    labels:
+      severity: high
+  - alert: AWS_Console_GetSigninToken_Potential_Abuse
+    annotations:
+      author: Chester Le Bron (@123Le_Bron)
+      description: 'Detects potentially suspicious events involving "GetSigninToken".
+
+        An adversary using the "aws_consoler" tool can leverage this console API to create temporary federated credential that help obfuscate which AWS credential is compromised (the original access key) and enables the adversary to pivot from the AWS CLI to console sessions without the need for MFA using the new access key issued in this request.
+
+'
+      summary: AWS Console GetSigninToken Potential Abuse
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^signin\.amazonaws\.com$` and eventName=~`(?i)^GetSigninToken$` and userAgent!~`(?i).*Jersey/\$\{project\.version\}.*` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: AWS_Create_Load_Balancer
+    annotations:
+      author: Austin Songer
+      description: AWS Create Load Balancer
+      summary: AWS Create Load Balancer
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^elasticloadbalancing\.amazonaws\.com$` and eventName=~`(?i)^CreateLoadBalancer.*` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: AWS_EC2_Disable_EBS_Encryption
+    annotations:
+      author: Sittikorn S
+      description: 'Identifies disabling of default Amazon Elastic Block Store (EBS) encryption in the current region.
+
+        Disabling default encryption does not change the encryption status of your existing volumes.
+
+'
+      summary: AWS EC2 Disable EBS Encryption
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and eventName=~`(?i)^DisableEbsEncryptionByDefault$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: AWS_EC2_Download_Userdata
+    annotations:
+      author: faloker
+      description: Detects bulk downloading of User Data associated with AWS EC2 instances. Instance User Data may include installation scripts and hard-coded secrets for deployment.
+      summary: AWS EC2 Download Userdata
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and requestParameters_attribute=~`(?i)^userData$` and eventName=~`(?i)^DescribeInstanceAttribute$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: AWS_EC2_Startup_Shell_Script_Change
+    annotations:
+      author: faloker
+      description: Detects changes to the EC2 instance startup script. The shell script will be executed as root/SYSTEM every time the specific instances are booted up.
+      summary: AWS EC2 Startup Shell Script Change
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and requestParameters_attribute=~`(?i)^userData$` and eventName=~`(?i)^ModifyInstanceAttribute$` [1m])) or vector(0) > 0
+    labels:
+      severity: high
+  - alert: AWS_EC2_VM_Export_Failure
+    annotations:
+      author: Diogo Braz
+      description: An attempt to export an AWS EC2 instance has been detected. A VM Export might indicate an attempt to extract information from an instance.
+      summary: AWS EC2 VM Export Failure
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i)^CreateInstanceExportTask$` and eventSource=~`(?i)^ec2\.amazonaws\.com$` and errorMessage!~`(?i).*` and errorCode!~`(?i).*` and responseElements!~`(?i).*Failure.*` [1m])) or vector(0) > 0
+    labels:
+      severity: low
+  - alert: AWS_ECS_Backdoor_Task_Definition
+    annotations:
+      author: Darin Smith
+      description: Detects when an Elastic Container Service (ECS) Task Definition has been modified and run. This can indicate an adversary adding a backdoor to establish persistence or escalate privileges. This rule is based on examining events created upon execution of Rhino Security Lab's Pacu in a lab environment.
+      summary: AWS ECS Backdoor Task Definition
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ecs\.amazonaws\.com$` and (eventName=~`(?i)^DescribeTaskDefinition$` or eventName=~`(?i)^RegisterTaskDefinition$` or eventName=~`(?i)^RunTask$`) and requestParameters_containerDefinitions_command=~`(?i).*169\.254.*` and requestParameters_containerDefinitions_command=~`(?i).*\$AWS_CONTAINER_CREDENTIALS.*` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: AWS_EFS_Fileshare_Modified_or_Deleted
+    annotations:
+      author: Austin Songer @austinsonger
+      description: 'Detects when a EFS Fileshare is modified or deleted.
+
+        You can''t delete a file system that is in use.
+
+        If the file system has any mount targets, the adversary must first delete them, so deletion of a mount will occur before deletion of a fileshare.
+
+'
+      summary: AWS EFS Fileshare Modified or Deleted
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^elasticfilesystem\.amazonaws\.com$` and eventName=~`(?i)^DeleteFileSystem$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: AWS_EFS_Fileshare_Mount_Modified_or_Deleted
+    annotations:
+      author: Austin Songer @austinsonger
+      description: Detects when a EFS Fileshare Mount is modified or deleted. An adversary breaking any file system using the mount target that is being deleted, which might disrupt instances or applications using those mounts.
+      summary: AWS EFS Fileshare Mount Modified or Deleted
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^elasticfilesystem\.amazonaws\.com$` and eventName=~`(?i)^DeleteMountTarget$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: AWS_EKS_Cluster_Created_or_Deleted
+    annotations:
+      author: Austin Songer
+      description: Identifies when an EKS cluster is created or deleted.
+      summary: AWS EKS Cluster Created or Deleted
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^eks\.amazonaws\.com$` and (eventName=~`(?i)^CreateCluster$` or eventName=~`(?i)^DeleteCluster$`) [1m])) or vector(0) > 0
+    labels:
+      severity: low
+  - alert: AWS_ElastiCache_Security_Group_Created
+    annotations:
+      author: Austin Songer @austinsonger
+      description: Detects when an ElastiCache security group has been created.
+      summary: AWS ElastiCache Security Group Created
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^elasticache\.amazonaws\.com$` and eventName=~`(?i)^CreateCacheSecurityGroup$` [1m])) or vector(0) > 0
+    labels:
+      severity: low
+  - alert: AWS_ElastiCache_Security_Group_Modified_or_Deleted
+    annotations:
+      author: Austin Songer @austinsonger
+      description: Identifies when an ElastiCache security group has been modified or deleted.
+      summary: AWS ElastiCache Security Group Modified or Deleted
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^elasticache\.amazonaws\.com$` and (eventName=~`(?i)^DeleteCacheSecurityGroup$` or eventName=~`(?i)^AuthorizeCacheSecurityGroupIngress$` or eventName=~`(?i)^RevokeCacheSecurityGroupIngress$` or eventName=~`(?i)^AuthorizeCacheSecurityGroupEgress$` or eventName=~`(?i)^RevokeCacheSecurityGroupEgress$`) [1m])) or vector(0) > 0
+    labels:
+      severity: low
+  - alert: AWS_Glue_Development_Endpoint_Activity
+    annotations:
+      author: Austin Songer @austinsonger
+      description: Detects possible suspicious glue development endpoint activity.
+      summary: AWS Glue Development Endpoint Activity
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^glue\.amazonaws\.com$` and (eventName=~`(?i)^CreateDevEndpoint$` or eventName=~`(?i)^DeleteDevEndpoint$` or eventName=~`(?i)^UpdateDevEndpoint$`) [1m])) or vector(0) > 0
+    labels:
+      severity: low
+  - alert: AWS_GuardDuty_Important_Change
+    annotations:
+      author: faloker
+      description: Detects updates of the GuardDuty list of trusted IPs, perhaps to disable security alerts against malicious IPs.
+      summary: AWS GuardDuty Important Change
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^guardduty\.amazonaws\.com$` and eventName=~`(?i)^CreateIPSet$` [1m])) or vector(0) > 0
+    labels:
+      severity: high
+  - alert: AWS_IAM_Backdoor_Users_Keys
+    annotations:
+      author: faloker
+      description: 'Detects AWS API key creation for a user by another user.
+
+        Backdoored users can be used to obtain persistence in the AWS environment.
+
+        Also with this alert, you can detect a flow of AWS keys in your org.
+
+'
+      summary: AWS IAM Backdoor Users Keys
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^CreateAccessKey$` and userIdentity_arn!~`(?i).*responseElements\.accessKey\.userName.*` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: AWS_IAM_S3Browser_LoginProfile_Creation
+    annotations:
+      author: daniel.bohannon@permiso.io (@danielhbohannon)
+      description: Detects S3 Browser utility performing reconnaissance looking for existing IAM Users without a LoginProfile defined then (when found) creating a LoginProfile.
+      summary: AWS IAM S3Browser LoginProfile Creation
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and (eventName=~`(?i)^GetLoginProfile$` or eventName=~`(?i)^CreateLoginProfile$`) and userAgent=~`(?i).*S3\ Browser.*` [1m])) or vector(0) > 0
+    labels:
+      severity: high
+  - alert: AWS_IAM_S3Browser_Templated_S3_Bucket_Policy_Creation
+    annotations:
+      author: daniel.bohannon@permiso.io (@danielhbohannon)
+      description: Detects S3 browser utility creating Inline IAM policy containing default S3 bucket name placeholder value of "<YOUR-BUCKET-NAME>".
+      summary: AWS IAM S3Browser Templated S3 Bucket Policy Creation
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^PutUserPolicy$` and userAgent=~`(?i).*S3\ Browser.*` and requestParameters=~`(?i).*"arn:aws:s3:::<YOUR\-BUCKET\-NAME>/.*".*` and requestParameters=~`(?i).*"s3:GetObject".*` and requestParameters=~`(?i).*"Allow".*` [1m])) or vector(0) > 0
+    labels:
+      severity: high
+  - alert: AWS_IAM_S3Browser_User_or_AccessKey_Creation
+    annotations:
+      author: daniel.bohannon@permiso.io (@danielhbohannon)
+      description: Detects S3 Browser utility creating IAM User or AccessKey.
+      summary: AWS IAM S3Browser User or AccessKey Creation
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and (eventName=~`(?i)^CreateUser$` or eventName=~`(?i)^CreateAccessKey$`) and userAgent=~`(?i).*S3\ Browser.*` [1m])) or vector(0) > 0
+    labels:
+      severity: high
+  - alert: AWS_Identity_Center_Identity_Provider_Change
+    annotations:
+      author: Michael McIntyre @wtfender
+      description: 'Detects a change in the AWS Identity Center (FKA AWS SSO) identity provider.
+
+        A change in identity provider allows an attacker to establish persistent access or escalate privileges via user impersonation.
+
+'
+      summary: AWS Identity Center Identity Provider Change
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | (eventSource=~`(?i)^sso\-directory\.amazonaws\.com$` or eventSource=~`(?i)^sso\.amazonaws\.com$`) and (eventName=~`(?i)^AssociateDirectory$` or eventName=~`(?i)^DisableExternalIdPConfigurationForDirectory$` or eventName=~`(?i)^DisassociateDirectory$` or eventName=~`(?i)^EnableExternalIdPConfigurationForDirectory$`) [1m])) or vector(0) > 0
+    labels:
+      severity: high
+  - alert: AWS_Lambda_Function_Created_or_Invoked
+    annotations:
+      author: Austin Songer @austinsonger
+      description: Detects when an user creates or invokes a lambda function.
+      summary: AWS Lambda Function Created or Invoked
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^CreateFunction$` or eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^Invoke$` [1m])) or vector(0) > 0
+    labels:
+      severity: low
+  - alert: AWS_Macie_Evasion
+    annotations:
+      author: Sittikorn S
+      description: Detects evade to Macie detection.
+      summary: AWS Macie Evasion
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i)^ArchiveFindings$` or eventName=~`(?i)^CreateFindingsFilter$` or eventName=~`(?i)^DeleteMember$` or eventName=~`(?i)^DisassociateFromMasterAccount$` or eventName=~`(?i)^DisassociateMember$` or eventName=~`(?i)^DisableMacie$` or eventName=~`(?i)^DisableOrganizationAdminAccount$` or eventName=~`(?i)^UpdateFindingsFilter$` or eventName=~`(?i)^UpdateMacieSession$` or eventName=~`(?i)^UpdateMemberSession$` or eventName=~`(?i)^UpdateClassificationJob$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: AWS_RDS_Master_Password_Change
+    annotations:
+      author: faloker
+      description: Detects the change of database master password. It may be a part of data exfiltration.
+      summary: AWS RDS Master Password Change
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^rds\.amazonaws\.com$` and responseElements_pendingModifiedValues_masterUserPassword=~`(?i).*` and eventName=~`(?i)^ModifyDBInstance$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: AWS_Root_Credentials
+    annotations:
+      author: vitaliy0x1
+      description: Detects AWS root account usage
+      summary: AWS Root Credentials
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | userIdentity_type=~`(?i)^Root$` and eventType!~`(?i)^AwsServiceEvent$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: AWS_Route_53_Domain_Transfer_Lock_Disabled
+    annotations:
+      author: Elastic, Austin Songer @austinsonger
+      description: Detects when a transfer lock was removed from a Route 53 domain. It is recommended to refrain from performing this action unless intending to transfer the domain to a different registrar.
+      summary: AWS Route 53 Domain Transfer Lock Disabled
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^route53\.amazonaws\.com$` and eventName=~`(?i)^DisableDomainTransferLock$` [1m])) or vector(0) > 0
+    labels:
+      severity: low
+  - alert: AWS_Route_53_Domain_Transferred_to_Another_Account
+    annotations:
+      author: Elastic, Austin Songer @austinsonger
+      description: Detects when a request has been made to transfer a Route 53 domain to another AWS account.
+      summary: AWS Route 53 Domain Transferred to Another Account
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^route53\.amazonaws\.com$` and eventName=~`(?i)^TransferDomainToAnotherAwsAccount$` [1m])) or vector(0) > 0
+    labels:
+      severity: low
+  - alert: AWS_S3_Bucket_Versioning_Disable
+    annotations:
+      author: Sean Johnstone | Unit 42
+      description: Detects when S3 bucket versioning is disabled. Threat actors use this technique during AWS ransomware incidents prior to deleting S3 objects.
+      summary: AWS S3 Bucket Versioning Disable
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^PutBucketVersioning$` and requestParameters=~`(?i).*Suspended.*` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: AWS_S3_Bucket_Versioning
+    annotations:
+      author: Sean Johnstone | Unit 42
+      description: Detects when S3 bucket versioning is disabled. Threat actors use this technique during AWS ransomware incidents prior to deleting S3 objects.
+      summary: AWS S3 Bucket Versioning
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^PutBucketVersioning$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: AWS_S3_made_public
+    annotations:
+      description: AWS S3 made public
+      summary: AWS S3 made public
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i).*PutBucketPublicAccessBlock.*` [1m])) or vector(0) > 0
+    labels:
+      severity: high
+  - alert: AWS_Security_Group_Port_Opened
+    annotations:
+      author: Murtaza Udaipurwala
+      description: Detects when an ingress allow rule is added or modified.
+      summary: AWS Security Group Port Opened
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and (eventName=~`(?i)^AuthorizeSecurityGroupIngress$` or eventName=~`(?i)^ModifySecurityGroupRules$`) [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: AWS_SecurityHub_Findings_Evasion
+    annotations:
+      author: Sittikorn S
+      description: Detects the modification of the findings on SecurityHub.
+      summary: AWS SecurityHub Findings Evasion
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^securityhub\.amazonaws\.com$` and (eventName=~`(?i)^BatchUpdateFindings$` or eventName=~`(?i)^DeleteInsight$` or eventName=~`(?i)^UpdateFindings$` or eventName=~`(?i)^UpdateInsight$`) [1m])) or vector(0) > 0
+    labels:
+      severity: high
+  - alert: AWS_Snapshot_Backup_Exfiltration
+    annotations:
+      author: Darin Smith
+      description: Detects the modification of an EC2 snapshot's permissions to enable access from another account
+      summary: AWS Snapshot Backup Exfiltration
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and eventName=~`(?i)^ModifySnapshotAttribute$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: AWS_STS_GetSessionToken_Misuse
+    annotations:
+      author: Austin Songer @austinsonger
+      description: Identifies the suspicious use of GetSessionToken. Tokens could be created and used by attackers to move laterally and escalate privileges.
+      summary: AWS STS GetSessionToken Misuse
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^sts\.amazonaws\.com$` and eventName=~`(?i)^GetSessionToken$` and userIdentity_type=~`(?i)^IAMUser$` [1m])) or vector(0) > 0
+    labels:
+      severity: low
+  - alert: AWS_Suspicious_SAML_Activity
+    annotations:
+      author: Austin Songer
+      description: Identifies when suspicious SAML activity has occurred in AWS. An adversary could gain backdoor access via SAML.
+      summary: AWS Suspicious SAML Activity
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^sts\.amazonaws\.com$` and eventName=~`(?i)^AssumeRoleWithSAML$` or eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^UpdateSAMLProvider$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: AWS_User_Login_Profile_Was_Modified
+    annotations:
+      author: toffeebr33k
+      description: 'An attacker with the iam:UpdateLoginProfile permission on other users can change the password used to login to the AWS console on any user that already has a login profile setup.
+
+        With this alert, it is used to detect anyone is changing password on behalf of other users.
+
+'
+      summary: AWS User Login Profile Was Modified
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^UpdateLoginProfile$` and userIdentity_arn!~`(?i).*requestParameters\.userName.*` [1m])) or vector(0) > 0
+    labels:
+      severity: high
+  - alert: AWS_vm_created
+    annotations:
+      description: AWS vm created
+      summary: AWS vm created
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i)^RunInstances$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: Potential_Bucket_Enumeration_on_AWS
+    annotations:
+      author: Christopher Peacock @securepeacock, SCYTHE @scythe_io
+      description: Looks for potential enumeration of AWS buckets via ListBuckets.
+      summary: Potential Bucket Enumeration on AWS
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^ListBuckets$` and type!~`(?i)^AssumedRole$` [1m])) or vector(0) > 0
+    labels:
+      severity: low
+  - alert: Restore_Public_AWS_RDS_Instance
+    annotations:
+      author: faloker
+      description: Detects the recovery of a new public database instance from a snapshot. It may be a part of data exfiltration.
+      summary: Restore Public AWS RDS Instance
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^rds\.amazonaws\.com$` and responseElements_publiclyAccessible=~`(?i)^true$` and eventName=~`(?i)^RestoreDBInstanceFromDBSnapshot$` [1m])) or vector(0) > 0
+    labels:
+      severity: high
+  - alert: SES_Identity_Has_Been_Deleted
+    annotations:
+      author: Janantha Marasinghe
+      description: Detects an instance of an SES identity being deleted via the "DeleteIdentity" event. This may be an indicator of an adversary removing the account that carried out suspicious or malicious activities
+      summary: SES Identity Has Been Deleted
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ses\.amazonaws\.com$` and eventName=~`(?i)^DeleteIdentity$` [1m])) or vector(0) > 0
+    labels:
+      severity: medium

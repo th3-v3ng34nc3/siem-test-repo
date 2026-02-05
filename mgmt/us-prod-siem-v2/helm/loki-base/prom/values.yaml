@@ -1,0 +1,44 @@
+prometheus:
+  prometheusSpec:
+  # Important: This allows Prometheus to find your Loki ServiceMonitors
+    serviceMonitorSelectorNilUsesHelmValues: false
+    # Persistence for your metrics data on DigitalOcean
+    serviceMonitorSelector:
+      matchLabels:
+      release: prometheus
+      # Disables the default behavior of picking up everything
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: do-block-storage
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 20Gi
+defaultRules:
+  enabled: false
+
+# Disable Alertmanager if you just want metrics for now
+alertmanager:
+  enabled: false
+# Grafana is usually already installed with Loki, but you can enable it here
+grafana:
+  enabled: false
+nodeExporter:
+  enabled: false
+kubeStateMetrics:
+  enabled: false
+kubernetesServiceMonitors:
+  enabled: false
+
+# 2. Disable scraping of core K8s components
+kubeApiServer:
+  enabled: false
+kubelet:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false

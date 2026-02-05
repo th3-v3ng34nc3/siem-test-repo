@@ -3,3 +3,9 @@
 **/k6/**
 **/azure-creds
 threat-intel.bak/**
+
+.terraform/
+
+# .tfstate files
+*.tfstate
+*.tfstate.*

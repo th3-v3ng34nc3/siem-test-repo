@@ -1,0 +1,33 @@
+# Example configuration for Loki with S3 storage
+
+loki:
+  storage_config:
+    aws:
+      region: {{ .Values.storage.region }}
+      bucketnames: {{ .Values.storage.chunks }}
+      s3forcepathstyle: false
+  storage:
+    type: s3
+    bucketNames:
+        chunks: {{ .Values.storage.chunks }}
+        ruler: {{ .Values.storage.ruler }}
+        admin: {{ .Values.storage.admin }}
+    s3:
+      # s3 URL can be used to specify the endpoint, access key, secret key, and bucket name this works well for S3 compatible storage or if you are hosting Loki on-premises and want to use S3 as the storage backend. Either use the s3 URL or the individual fields below (AWS endpoint, region, secret).
+      #s3: s3://access_key:secret_access_key@custom_endpoint/bucket_name
+      # AWS endpoint URL
+      #endpoint: <your-endpoint>
+      # AWS region where the S3 bucket is located
+      region: {{ .Values.storage.region }}
+      # AWS secret access key
+      secretAccessKey: {{ .Values.storage.secretAccessKey }}
+      # AWS access key ID
+      accessKeyId: {{ .Values.storage.accessKeyId }}
+      # AWS signature version (e.g., v2 or v4)
+      #signatureVersion: <your-signature-version>
+      # Forces the path style for S3 (true/false)
+      s3ForcePathStyle: false
+      # Allows insecure (HTTP) connections (true/false)
+      insecure: false
+      # HTTP configuration settings
+      http_config: {}

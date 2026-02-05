@@ -104,7 +104,7 @@ read -r PRIMARYCONN
 echo "Enter Azure Mutex prefix:"
 read -r PREFIX
 
-if [[ ! "$PREFIX" =~ ^[a-z]+$ ]]; then
+if [[ ! "$PREFIX" =~ ^[a-z0-9]+$ ]]; then
     echo "Error: Invalid Prefix. Must be only lowercase alphabet."
     exit 1
 fi

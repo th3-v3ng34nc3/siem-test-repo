@@ -1,0 +1,85 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: loki-scripts
+  namespace: tenant-yoma-fleet
+data:
+  threat-intel.rule: |
+    name: IP based detection rule
+    rules:
+    - alert: Malicious IP Detected
+      expr: |
+        count_over_time({job!=""} |~ "$BLOCK_LIST" [1m]) > 0
+      labels:
+          severity: critical
+      annotations:
+          summary: "Malicious IP Detected"
+          description: "Malicious IP Detected"
+          tenant_id: yoma-fleet
+          topic: acculens
+          tool: {{ .Labels.job }}
+
+  threat-intel.sh: |
+    #!/bin/bash
+    pushd /scripts
+    if [[ -z "$LOKI_GW_SVC" ]]; then
+      echo "Error: LOKI_GW_SVC is required." >&2
+      exit 1
+    fi
+    if [[ -z "$TENANT_USERNAME" ]]; then
+      echo "Error: TENANT_USERNAME is required." >&2
+      exit 1
+    fi
+    if [[ -z "$TENANT_PASSWORD" ]]; then
+      echo "Error: TENANT_PASSWORD is required." >&2
+      exit 1
+    fi
+    export BLOCK_LIST=$(curl https://raw.githubusercontent.com/stamparm/ipsum/refs/heads/master/levels/5.txt | grep -v "#" | awk '{print $1}' | sed 's/\./\\\\./g' | paste -sd'|' -)
+    TMP_FILE=$(mktemp)
+    envsubst < threat-intel.rule > $TMP_FILE
+    response=$(curl -u"$TENANT_USERNAME:$TENANT_PASSWORD" -X POST -H "Content-Type: application/yaml" --data-binary "@$TMP_FILE" "$LOKI_GW_SVC/loki/api/v1/rules/threat-intel")
+    if [[ "$response" == *'"status":"success"'* ]]; then
+      echo "Successfully applied $RULE_FILE"
+    else
+      echo "$response"
+      echo "ERROR: Loki did not return success for $RULE_FILE"
+      echo "Response was: $RULE_FILE"
+      exit 1
+    fi
+    popd
+
+  update.sh: |
+    #!/bin/bash
+    if [[ -z "$LOKI_GW_SVC" ]]; then
+      echo "Error: LOKI_GW_SVC is required." >&2
+      exit 1
+    fi
+    if [[ -z "$TENANT_USERNAME" ]]; then
+      echo "Error: TENANT_USERNAME is required." >&2
+      exit 1
+    fi
+    if [[ -z "$TENANT_PASSWORD" ]]; then
+      echo "Error: TENANT_PASSWORD is required." >&2
+      exit 1
+    fi
+
+    RULES=("/rules/custom" "/rules/common")
+    TMP_FILE=$(mktemp)
+    for dir in "${RULES[@]}"
+    do
+      echo "Processing directory $dir"
+      RULE_NAMESPACE=$(basename $dir)
+      for rule in $(ls $dir)
+      do
+        echo "Processing rule $rule"
+        RULE_FILE="$dir/$rule"
+        response=$(curl -u"$TENANT_USERNAME:$TENANT_PASSWORD" -X POST -H "Content-Type: application/yaml" --data-binary "@$RULE_FILE" "$LOKI_GW_SVC/loki/api/v1/rules/$RULE_NAMESPACE")
+        if [[ "$response" == *'"status":"success"'* ]]; then
+          echo "Successfully applied $RULE_FILE"
+        else
+          echo "ERROR: Loki did not return success for $RULE_FILE"
+          echo "Response was: $RULE_FILE"
+          exit 1
+        fi
+      done
+    done

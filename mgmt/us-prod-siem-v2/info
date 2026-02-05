@@ -1,0 +1,3 @@
+server=us.siem.v2.accuknox.com
+port=443
+protocol=https
