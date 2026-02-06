@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aws-cloudwatch
+  namespace: tenant-validation
+  annotations:
+    tenant: validation
+    collector: cloudwatch
+    type: aws
+spec:
+  selector:
+    matchLabels:
+      app: aws-cloudwatch
+  template:
+    metadata:
+      labels:
+        app: aws-cloudwatch
+    spec:
+      volumes:
+        - name:  aws-alloy-cloudwatch
+          secret:
+            secretName:  aws-alloy-cloudwatch
+        - name: aws-logstash-cloudwatch
+          secret:
+            secretName: aws-logstash-cloudwatch
+      containers:
+      - name: aws-alloy-cloudwatch
+        image: grafana/alloy:v1.12.2
+        imagePullPolicy: IfNotPresent
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        args:
+        - run
+        - /etc/alloy/config.alloy
+        - --storage.path=/var/lib/alloy/data
+        - --disable-reporting
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+          - name: aws-alloy-cloudwatch
+            readOnly: true
+            mountPath: /etc/alloy/
+      - name: logstash
+        image: public.ecr.aws/k9v9d5v2/admin-tools/crd-collectors/logstash:v1.0.1
+        imagePullPolicy: IfNotPresent
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9091
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        ports:
+        - containerPort: 9091
+        - containerPort: 9090
+        args:
+          - "-f"
+          - "/configs/pipeline.conf"
+        volumeMounts:
+          - name: aws-logstash-cloudwatch
+            readOnly: true
+            mountPath: /configs/
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m" 
+
