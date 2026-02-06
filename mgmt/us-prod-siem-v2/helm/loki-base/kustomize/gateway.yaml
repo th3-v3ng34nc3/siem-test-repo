@@ -8,6 +8,7 @@ metadata:
     nginx.org/mergeable-ingress-type: "master"
     # cert-manager integration
     cert-manager.io/cluster-issuer: "letsencrypt-production"
+    nginx.org/client-max-body-size: "50m"
 spec:
   tls:
     - hosts:

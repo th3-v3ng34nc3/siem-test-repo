@@ -80,3 +80,5 @@ gateway:
     type: ClusterIP
   basicAuth:
     enabled: true
+  nginxConfig:
+    clientMaxBodySize: 100M

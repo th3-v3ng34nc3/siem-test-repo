@@ -75,7 +75,10 @@ resultsCache:
   allocatedMemory: 500
 
 gateway:
+  replicas: 2
   service:
     type: ClusterIP
   basicAuth:
     enabled: true
+  nginxConfig:
+    clientMaxBodySize: 100M

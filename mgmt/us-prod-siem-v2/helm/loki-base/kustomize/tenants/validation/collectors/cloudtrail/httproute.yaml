@@ -13,6 +13,7 @@ metadata:
     nginx.org/rewrites: "serviceName=aws-cloudtrail rewrite=/loki/api/v1/raw"
     nginx.org/auth-type: "basic"
     nginx.org/auth-secret: "htpasswd"
+    nginx.org/client-max-body-size: "50m"
 spec:
   rules:
     - host: us.siem.v2.accuknox.com
