@@ -29,7 +29,7 @@ vault_check_connect
 #helmfile write-values
 #helmfile destroy
 #helmfile sync
-#helmfile -l name=loki sync
-helmfile -l name=kustomize sync
+helmfile -l name=loki sync
+#helmfile -l name=kustomize sync
 #helmfile -l name=rules sync
 popd
