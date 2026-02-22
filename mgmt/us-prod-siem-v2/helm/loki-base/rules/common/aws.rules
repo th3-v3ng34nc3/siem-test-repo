@@ -9,7 +9,7 @@ rules:
       accuknox: <accuknox_id>
       topic: acculens
       tool: cloudtrail
-    expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i)^list.*` [1m])) or vector(0) > 0
+    expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i)^list.*` [1m])) > 10 or vector(0) > 0
     labels:
       severity: low
   - alert: AWS_Attached_Malicious_Lambda_Layer

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-sqlite-pvc
+  namespace: dashboard-yoma-fleet
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi # SQLite is very lightweight; 2GB is plenty for most
