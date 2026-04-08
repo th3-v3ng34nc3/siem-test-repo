@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: http-aditya-collector
+  namespace: tenant-se-team
+  labels:
+    tenant: se-team
+    collector: aditya-collector
+    type: http
+spec:
+  selector:
+    matchLabels:
+      app: http-aditya-collector
+  template:
+    metadata:
+      labels:
+        app: http-aditya-collector
+    spec:
+      volumes:
+        - name:  http-aditya-collector
+          secret:
+            secretName:  http-aditya-collector
+      containers:
+      - name: http-aditya-collector
+        image: grafana/alloy:v1.12.2
+        imagePullPolicy: IfNotPresent
+        args:
+        - run
+        - /etc/alloy/config.alloy
+        - --storage.path=/var/lib/alloy/data
+        - --disable-reporting
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        volumeMounts:
+          - name: http-aditya-collector
+            readOnly: true
+            mountPath: /etc/alloy/

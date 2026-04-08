@@ -2,3 +2,5 @@
 resources:
   - cloudtrail
   - cloudwatch
+  - azure
+  - gcp

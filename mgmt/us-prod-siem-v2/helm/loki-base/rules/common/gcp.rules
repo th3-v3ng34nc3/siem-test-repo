@@ -261,3 +261,27 @@ rules:
     expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_method_name=~`(?i)^storage\.buckets\.insert$` or gcp_audit_method_name=~`(?i)^storage\.buckets\.create$` [1m])) or vector(0) > 0
     labels:
       severity: medium
+  - alert: Google_Cloud_Non_India_User
+    annotations:
+      author: Vivky
+      description: Detects when users outside of the india region connects to the cloud account
+      summary: users outside of the india region
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({cloud="gcp"} |~ `country_iso_code` != `country_iso_code":"IN"`| json | geoip_geo_country_iso_code != "IN" [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: Google_Cloud_Resouce_Outside_India
+    annotations:
+      author: Vivky
+      description: Detects when resources are created or queried. this will alert for non india resources
+      summary: resources outside of the india region
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: gcplog
+    expr: sum(count_over_time({cloud="gcp"} |~ `(?i)(locations|zones)`| json| protoPayload_resourceName !~ `(?i)asia-south1|asia-south2` [1m])) or vector(0) > 0
+    labels:
+      severity: medium

@@ -534,3 +534,27 @@ rules:
     expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ses\.amazonaws\.com$` and eventName=~`(?i)^DeleteIdentity$` [1m])) or vector(0) > 0
     labels:
       severity: medium
+  - alert: AWS_Non_India_User
+    annotations:
+      author: Vicky
+      description: Detects when users outside of the india region connects to the cloud account
+      summary: users outside of the india region
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({cloud="aws"} |~ `country_iso_code` != `country_iso_code":"IN"` | json | geoip_geo_country_iso_code != "IN" [1m])) or vector(0) > 0
+    labels:
+      severity: medium
+  - alert: AWS_AI_Resouce_Outside_India
+    annotations:
+      author: Vicky
+      description: Detects when AI resources are created or queried. this will alert for non india resources
+      summary: ai resources outside of the india region
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: cloudtrail
+    expr: sum(count_over_time({cloud="aws"} |~ `(?i)(bedrock|sagemaker)`|~ `awsRegion` != `awsRegion":"ap-south-1"` | json | awsRegion != "ap-south-1" [1m])) or vector(0) > 0
+    labels:
+      severity: medium

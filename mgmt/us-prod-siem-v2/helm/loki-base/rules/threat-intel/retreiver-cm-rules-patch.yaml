@@ -267,6 +267,24 @@ data:
     - alert: Google_Cloud_Storage_Buckets_Modified_or_Deleted
       expr: |
           {job="gcplog"} | json | gcp_audit_method_name=~`(?i)^storage\.buckets\.insert$` or gcp_audit_method_name=~`(?i)^storage\.buckets\.create$` 
+    - alert: Google_Cloud_Non_India_User
+      expr: |
+          {cloud="gcp"} |~ `country_iso_code` != `country_iso_code":"IN"`| json | geoip_geo_country_iso_code != "IN"
+    - alert: Google_Cloud_Resouce_Outside_India
+      expr: |
+          {cloud="gcp"} |~ `(?i)(locations|zones)`| json| protoPayload_resourceName !~ `(?i)asia-south1|asia-south2`
+    - alert: Azure_User_Outside_India
+      expr: |
+          {cloud="azure"} |~ `country_iso_code` != `country_iso_code"":"IN"`
+    - alert: Azure_AI_Resouce_Outside_India
+      expr: |
+          {cloud="azure"} |~ `(?i)(machinelearning|openai|cognitive|ai)` |~ `(?i)/locations/` | json | records_resourceId !~ `(?i)centralindia|southindia|westindia`
+    - alert: AWS_Non_India_User
+      expr: |
+          {cloud="aws"} |~ `country_iso_code` != `country_iso_code":"IN"` | json | geoip_geo_country_iso_code != "IN"
+    - alert: AWS_AI_Resouce_Outside_India
+      expr: |
+          {cloud="aws"} |~ `(?i)(bedrock|sagemaker)`|~ `awsRegion` != `awsRegion":"ap-south-1"` | json | awsRegion != "ap-south-1"
     - alert: Malicious IP Detected
       expr: |
         {job!=""} |~ "$BLOCK_LIST"

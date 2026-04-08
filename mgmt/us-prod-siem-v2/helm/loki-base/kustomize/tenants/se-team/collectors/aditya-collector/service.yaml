@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: http-aditya-collector
+  namespace: tenant-se-team
+  annotations:
+    tenant: se-team
+    collector: aditya-collector
+    type: http
+spec:
+  selector:
+    app: http-aditya-collector
+  ports:
+  - port: 8080
+    targetPort: 8080

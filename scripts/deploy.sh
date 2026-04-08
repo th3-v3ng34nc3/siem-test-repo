@@ -27,9 +27,9 @@ echo "$ENV_ID" | $SCRIPT_DIR/gen_rules.sh
 helmfile init
 vault_check_connect
 #helmfile write-values
-#helmfile destroy
+#helmfile destroycd
 #helmfile sync
-#helmfile -l name=loki sync
+helmfile -l name=loki sync
 helmfile -l name=kustomize sync
-#helmfile -l name=rules sync
+helmfile -l name=rules sync
 popd

@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: http-aditya-collector
+  namespace: tenant-se-team
+  annotations:
+    tenant: se-team
+    collector: aditya-collector
+    type: http
+    env: us-prod-siem-v2
+    kubernetes.io/ingress.class: "nginx"
+    nginx.org/mergeable-ingress-type: "minion"
+    nginx.org/rewrites: "serviceName=http-aditya-collector rewrite=/loki/api/v1/raw"
+    nginx.org/auth-type: "basic"
+    nginx.org/auth-secret: "htpasswd"
+    nginx.org/client-max-body-size: "50m"
+spec:
+  rules:
+    - host: us.siem.v2.accuknox.com
+      http:
+        paths:
+          - path: /us-prod-siem-v2/se-team/90d904e87b4f29ad1cb3348a472886446234e70e4011478f926576cf/aditya-collector/push
+            pathType: Prefix
+            backend:
+              service:
+                name: http-aditya-collector
+                port:
+                  number: 8080

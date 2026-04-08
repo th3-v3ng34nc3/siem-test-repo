@@ -12,7 +12,7 @@ data:
           accuknox: 999999999
           topic: acculens
           tool: cloudtrail
-        expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i)^list.*` [1m])) or vector(0) > 0
+        expr: sum(count_over_time({job="cloudtrail"} | json | eventName=~`(?i)^list.*` [1m])) > 10 or vector(0) > 0
         labels:
           severity: low
       - alert: AWS_Attached_Malicious_Lambda_Layer
@@ -537,6 +537,30 @@ data:
         expr: sum(count_over_time({job="cloudtrail"} | json | eventSource=~`(?i)^ses\.amazonaws\.com$` and eventName=~`(?i)^DeleteIdentity$` [1m])) or vector(0) > 0
         labels:
           severity: medium
+      - alert: AWS_Non_India_User
+        annotations:
+          author: Vicky
+          description: Detects when users outside of the india region connects to the cloud account
+          summary: users outside of the india region
+          tenant: us-prod-siem-v2-canary-user
+          accuknox: 999999999
+          topic: acculens
+          tool: cloudtrail
+        expr: sum(count_over_time({cloud="aws"} |~ `country_iso_code` != `country_iso_code":"IN"` | json | geoip_geo_country_iso_code != "IN" [1m])) or vector(0) > 0
+        labels:
+          severity: medium
+      - alert: AWS_AI_Resouce_Outside_India
+        annotations:
+          author: Vicky
+          description: Detects when AI resources are created or queried. this will alert for non india resources
+          summary: ai resources outside of the india region
+          tenant: us-prod-siem-v2-canary-user
+          accuknox: 999999999
+          topic: acculens
+          tool: cloudtrail
+        expr: sum(count_over_time({cloud="aws"} |~ `(?i)(bedrock|sagemaker)`|~ `awsRegion` != `awsRegion":"ap-south-1"` | json | awsRegion != "ap-south-1" [1m])) or vector(0) > 0
+        labels:
+          severity: medium
   azure.rules: |
     name: Azure
     rules:
@@ -814,6 +838,30 @@ data:
         expr: sum(count_over_time({job="azurelog"} |~ `(?i)Microsoft\.Authorization/roleAssignments/write` [1m])) or vector(0) > 0
         labels:
           severity: medium
+      - alert: Azure_User_Outside_India
+        annotations:
+          author: Vicky
+          description: Detects when users outside of the india region connects to the cloud account.
+          summary: users outside of the india region
+          tenant: us-prod-siem-v2-canary-user
+          accuknox: 999999999
+          topic: acculens
+          tool: azurelog
+        expr: sum(count_over_time({cloud="azure"} |~ `country_iso_code` != `country_iso_code"":"IN"` | json | geoip_geo_country_iso_code != "IN" [1m])) or vector(0) > 0
+        labels:
+          severity: medium
+      - alert: Azure_AI_Resouce_Outside_India
+        annotations:
+          author: Vicky
+          description: Detects when resources are created or queried. this will alert for non india resources.
+          summary: ai resources outside of the india region
+          tenant: us-prod-siem-v2-canary-user
+          accuknox: 999999999
+          topic: acculens
+          tool: azurelog
+        expr: sum(count_over_time({cloud="azure"} |~ `(?i)(machinelearning|openai|cognitive|ai)` |~ `(?i)/locations/` | json | records_resourceId !~ `(?i)centralindia|southindia|westindia` [1m])) or vector(0) > 0
+        labels:
+          severity: medium
   gcp.rules: |
     name: GCP
     rules:
@@ -1076,6 +1124,30 @@ data:
           topic: acculens
           tool: gcplog
         expr: sum(count_over_time({job="gcplog"} | json | gcp_audit_method_name=~`(?i)^storage\.buckets\.insert$` or gcp_audit_method_name=~`(?i)^storage\.buckets\.create$` [1m])) or vector(0) > 0
+        labels:
+          severity: medium
+      - alert: Google_Cloud_Non_India_User
+        annotations:
+          author: Vivky
+          description: Detects when users outside of the india region connects to the cloud account
+          summary: users outside of the india region
+          tenant: us-prod-siem-v2-canary-user
+          accuknox: 999999999
+          topic: acculens
+          tool: gcplog
+        expr: sum(count_over_time({cloud="gcp"} |~ `country_iso_code` != `country_iso_code":"IN"`| json | geoip_geo_country_iso_code != "IN" [1m])) or vector(0) > 0
+        labels:
+          severity: medium
+      - alert: Google_Cloud_Resouce_Outside_India
+        annotations:
+          author: Vivky
+          description: Detects when resources are created or queried. this will alert for non india resources
+          summary: resources outside of the india region
+          tenant: us-prod-siem-v2-canary-user
+          accuknox: 999999999
+          topic: acculens
+          tool: gcplog
+        expr: sum(count_over_time({cloud="gcp"} |~ `(?i)(locations|zones)`| json| protoPayload_resourceName !~ `(?i)asia-south1|asia-south2` [1m])) or vector(0) > 0
         labels:
           severity: medium
 kind: ConfigMap
