@@ -298,3 +298,15 @@ rules:
     expr: sum(count_over_time({cloud="azure"} |~ `(?i)(machinelearning|openai|cognitive|ai)` |~ `(?i)/locations/` | json | records_resourceId !~ `(?i)centralindia|southindia|westindia` [1m])) or vector(0) > 0
     labels:
       severity: medium
+  - alert: Azure_AI_Resouce_Outside_India_Policy
+    annotations:
+      author: Vicky
+      description: Detects when resources creation is attempted outside of india region.
+      summary: ai resources outside of the india region
+      tenant: <tenant_id>
+      accuknox: <accuknox_id>
+      topic: acculens
+      tool: azurelog
+    expr: sum(count_over_time({cloud="azure"} |= "Microsoft.Authorization/policies/deny/action" [1m])) or vector(0) > 0
+    labels:
+      severity: error

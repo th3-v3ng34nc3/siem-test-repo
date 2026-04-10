@@ -279,6 +279,9 @@ data:
     - alert: Azure_AI_Resouce_Outside_India
       expr: |
           {cloud="azure"} |~ `(?i)(machinelearning|openai|cognitive|ai)` |~ `(?i)/locations/` | json | records_resourceId !~ `(?i)centralindia|southindia|westindia`
+    - alert: Azure_AI_Resouce_Outside_India_Policy
+      expr: |
+          {cloud="azure"} |= "Microsoft.Authorization/policies/deny/action"
     - alert: AWS_Non_India_User
       expr: |
           {cloud="aws"} |~ `country_iso_code` != `country_iso_code":"IN"` | json | geoip_geo_country_iso_code != "IN"
