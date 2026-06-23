@@ -1,0 +1,34 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: limit-egress-to-svc1
+  namespace: dashboard-validation
+spec:
+  podSelector:
+    matchLabels:
+      app: grafana-dash
+  policyTypes:
+  - Egress
+  egress:
+  # 1. Allow DNS (Necessary to resolve 'svc1.Y.svc.cluster.local')
+  - to:
+    - namespaceSelector: {} # Allows DNS in any namespace (usually kube-system)
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+  # 2. Allow connection ONLY to SVC1 in Namespace Y
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: loki
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/component: gateway
+    ports:
+    - protocol: TCP
+      port: 80 # The port SVC1 is listening on
+    - protocol: TCP
+      port: 8080 # The port SVC1 is listening on
