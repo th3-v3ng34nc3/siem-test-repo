@@ -1,0 +1,133 @@
+repositories:
+  - name: grafana
+    url: https://grafana.github.io/helm-charts
+  - name: prometheus-community
+    url: https://prometheus-community.github.io/helm-charts
+  - name: external-secrets
+    url: https://charts.external-secrets.io
+  - name: nginx-ingress
+    url: ghcr.io/nginx/charts
+    oci: true
+  - name: cert-manager
+    url: quay.io/jetstack/charts
+    oci: true
+  - name: accuknox-ecr
+    url: public.ecr.aws/k9v9d5v2
+    oci: true
+---
+environments:
+  default:
+    values:
+      - storage:
+          region: ref+vault://siem/in-prod-siem-v2/storage/backend/#region
+          chunks: ref+vault://siem/in-prod-siem-v2/storage/backend/#chunks
+          admin: ref+vault://siem/in-prod-siem-v2/storage/backend/#admin
+          ruler: ref+vault://siem/in-prod-siem-v2/storage/backend/#ruler
+          accessKeyId: ref+vault://siem/in-prod-siem-v2/storage/backend/#accessKeyId
+          secretAccessKey: ref+vault://siem/in-prod-siem-v2/storage/backend/#secretAccessKey
+      - tenants.yaml
+      - canary:
+          username: ref+vault://siem/in-prod-siem-v2/tenants/canary-user/loki_tenant/#username
+          password: ref+vault://siem/in-prod-siem-v2/tenants/canary-user/loki_tenant/#password     
+---
+releases:
+  - name: external-secrets
+    chart: external-secrets/external-secrets
+    version: 1.2.0
+    namespace: external-secrets
+    timeout: 1000
+  - name: cert-manager
+    chart: cert-manager/cert-manager
+    version: v1.19.2
+    timeout: 1000
+    namespace: cert-manager
+    values:
+    - certmanager/defaults.yaml
+  - name: nginx-ingress
+    chart: nginx-ingress/nginx-ingress
+    timeout: 1000
+    version: 2.4.1
+    namespace: nginx-ingress
+  - name: alertmanager
+    chart: prometheus-community/alertmanager
+    timeout: 1000
+    version: 1.28.1
+    namespace: alertmgr
+    values:
+      - alertmgr/webhook.yaml
+  - name: loki
+    chart: grafana/loki
+    timeout: 1000
+    version: 6.45.2
+    namespace: loki
+    needs:
+      - alertmgr/alertmanager
+    values:
+      - loki/components.yaml
+      - loki/loki-common.yaml
+      - loki/loki-storage-config.gotmpl
+      - loki/loki-canary.gotmpl
+      - loki/multi-tenant.gotmpl
+      - loki/ruler-config.yaml
+  - name: grafana
+    chart: grafana/grafana
+    timeout: 1000
+    namespace: grafana
+    values:
+      - grafana/grafana-values.yaml
+    needs:
+      - loki/loki
+  - name: retreiver
+    chart: accuknox-ecr/retriver
+    timeout: 1000
+    version: v1.0.2
+    namespace: retreiver
+    values:
+      - accuknox:
+          token: ref+vault://siem/in-prod-siem-v2/accuknox/login/#token
+          url: ref+vault://siem/in-prod-siem-v2/accuknox/login/#endpoint
+  - name: kustomize
+    chart: ./kustomize
+    timeout: 1000
+    needs:
+     - cert-manager/cert-manager
+     - external-secrets/external-secrets
+     - loki/loki
+    hooks:
+      - events: ["postsync"]
+        showlogs: true
+        command: "sh"
+        args:
+          - "-c"
+          - |
+            # Loop until the certificate is found or we hit 30 attempts
+            count=0
+            until kubectl get certificate logs-tls-secret -nnginx-ingress >/dev/null 2>&1 || [ $count -eq 30 ]; do
+              echo "Waiting for ingress-shim to create Certificate..."
+              sleep 1
+              count=$((count + 1))
+            done
+
+            if [ $count -eq 30 ]; then
+              echo "Timed out waiting for Certificate object."
+              exit 1
+            fi
+
+            echo "Certificate found. Annotating..."
+            if [ "$(kubectl get certificate logs-tls-secret -nnginx-ingress -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')" != "True" ]; then
+              kubectl annotate certificate logs-tls-secret cert-manager.io/issue-temporary-certificate="true" --overwrite -nnginx-ingress
+            fi
+  - name: prometheus
+    namespace: monitoring
+    timeout: 1000
+    chart: prometheus-community/kube-prometheus-stack
+    version: 61.0.0 # Use the latest stable version
+    createNamespace: true
+    values:
+    - prom/values.yaml
+  - name: rules
+    chart: ./rules
+    timeout: 1000
+    needs:
+    - retreiver/retreiver
+    - loki/loki

@@ -1,0 +1,274 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: retreiver-cm-template
+  namespace: loki
+data:
+  loki-rules.yaml: |
+    rules:
+    - alert: Account_Enumeration_on_AWS
+      expr: |
+          {job="cloudtrail"} | json | eventName=~`(?i)^list.*` 
+    - alert: AWS_Attached_Malicious_Lambda_Layer
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^UpdateFunctionConfiguration.*` 
+    - alert: AWS_CloudTrail_Important_Change
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^cloudtrail\.amazonaws\.com$` and (eventName=~`(?i)^StopLogging$` or eventName=~`(?i)^UpdateTrail$` or eventName=~`(?i)^DeleteTrail$`) 
+    - alert: AWS_Config_Disabling_Channel_Recorder
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^config\.amazonaws\.com$` and (eventName=~`(?i)^DeleteDeliveryChannel$` or eventName=~`(?i)^StopConfigurationRecorder$`) 
+    - alert: AWS_Console_GetSigninToken_Potential_Abuse
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^signin\.amazonaws\.com$` and eventName=~`(?i)^GetSigninToken$` and userAgent!~`(?i).*Jersey/\$\{project\.version\}.*` 
+    - alert: AWS_Create_Load_Balancer
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^elasticloadbalancing\.amazonaws\.com$` and eventName=~`(?i)^CreateLoadBalancer.*` 
+    - alert: AWS_EC2_Disable_EBS_Encryption
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and eventName=~`(?i)^DisableEbsEncryptionByDefault$` 
+    - alert: AWS_EC2_Download_Userdata
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and requestParameters_attribute=~`(?i)^userData$` and eventName=~`(?i)^DescribeInstanceAttribute$` 
+    - alert: AWS_EC2_Startup_Shell_Script_Change
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and requestParameters_attribute=~`(?i)^userData$` and eventName=~`(?i)^ModifyInstanceAttribute$` 
+    - alert: AWS_EC2_VM_Export_Failure
+      expr: |
+          {job="cloudtrail"} | json | eventName=~`(?i)^CreateInstanceExportTask$` and eventSource=~`(?i)^ec2\.amazonaws\.com$` and errorMessage!~`(?i).*` and errorCode!~`(?i).*` and responseElements!~`(?i).*Failure.*` 
+    - alert: AWS_ECS_Backdoor_Task_Definition
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^ecs\.amazonaws\.com$` and (eventName=~`(?i)^DescribeTaskDefinition$` or eventName=~`(?i)^RegisterTaskDefinition$` or eventName=~`(?i)^RunTask$`) and requestParameters_containerDefinitions_command=~`(?i).*169\.254.*` and requestParameters_containerDefinitions_command=~`(?i).*\$AWS_CONTAINER_CREDENTIALS.*` 
+    - alert: AWS_EFS_Fileshare_Modified_or_Deleted
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^elasticfilesystem\.amazonaws\.com$` and eventName=~`(?i)^DeleteFileSystem$` 
+    - alert: AWS_EFS_Fileshare_Mount_Modified_or_Deleted
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^elasticfilesystem\.amazonaws\.com$` and eventName=~`(?i)^DeleteMountTarget$` 
+    - alert: AWS_EKS_Cluster_Created_or_Deleted
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^eks\.amazonaws\.com$` and (eventName=~`(?i)^CreateCluster$` or eventName=~`(?i)^DeleteCluster$`) 
+    - alert: AWS_ElastiCache_Security_Group_Created
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^elasticache\.amazonaws\.com$` and eventName=~`(?i)^CreateCacheSecurityGroup$` 
+    - alert: AWS_ElastiCache_Security_Group_Modified_or_Deleted
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^elasticache\.amazonaws\.com$` and (eventName=~`(?i)^DeleteCacheSecurityGroup$` or eventName=~`(?i)^AuthorizeCacheSecurityGroupIngress$` or eventName=~`(?i)^RevokeCacheSecurityGroupIngress$` or eventName=~`(?i)^AuthorizeCacheSecurityGroupEgress$` or eventName=~`(?i)^RevokeCacheSecurityGroupEgress$`) 
+    - alert: AWS_Glue_Development_Endpoint_Activity
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^glue\.amazonaws\.com$` and (eventName=~`(?i)^CreateDevEndpoint$` or eventName=~`(?i)^DeleteDevEndpoint$` or eventName=~`(?i)^UpdateDevEndpoint$`) 
+    - alert: AWS_GuardDuty_Important_Change
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^guardduty\.amazonaws\.com$` and eventName=~`(?i)^CreateIPSet$` 
+    - alert: AWS_IAM_Backdoor_Users_Keys
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^CreateAccessKey$` and userIdentity_arn!~`(?i).*responseElements\.accessKey\.userName.*` 
+    - alert: AWS_IAM_S3Browser_LoginProfile_Creation
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and (eventName=~`(?i)^GetLoginProfile$` or eventName=~`(?i)^CreateLoginProfile$`) and userAgent=~`(?i).*S3\ Browser.*` 
+    - alert: AWS_IAM_S3Browser_Templated_S3_Bucket_Policy_Creation
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^PutUserPolicy$` and userAgent=~`(?i).*S3\ Browser.*` and requestParameters=~`(?i).*"arn:aws:s3:::<YOUR\-BUCKET\-NAME>/.*".*` and requestParameters=~`(?i).*"s3:GetObject".*` and requestParameters=~`(?i).*"Allow".*` 
+    - alert: AWS_IAM_S3Browser_User_or_AccessKey_Creation
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and (eventName=~`(?i)^CreateUser$` or eventName=~`(?i)^CreateAccessKey$`) and userAgent=~`(?i).*S3\ Browser.*` 
+    - alert: AWS_Identity_Center_Identity_Provider_Change
+      expr: |
+          {job="cloudtrail"} | json | (eventSource=~`(?i)^sso\-directory\.amazonaws\.com$` or eventSource=~`(?i)^sso\.amazonaws\.com$`) and (eventName=~`(?i)^AssociateDirectory$` or eventName=~`(?i)^DisableExternalIdPConfigurationForDirectory$` or eventName=~`(?i)^DisassociateDirectory$` or eventName=~`(?i)^EnableExternalIdPConfigurationForDirectory$`) 
+    - alert: AWS_Lambda_Function_Created_or_Invoked
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^CreateFunction$` or eventSource=~`(?i)^lambda\.amazonaws\.com$` and eventName=~`(?i)^Invoke$` 
+    - alert: AWS_Macie_Evasion
+      expr: |
+          {job="cloudtrail"} | json | eventName=~`(?i)^ArchiveFindings$` or eventName=~`(?i)^CreateFindingsFilter$` or eventName=~`(?i)^DeleteMember$` or eventName=~`(?i)^DisassociateFromMasterAccount$` or eventName=~`(?i)^DisassociateMember$` or eventName=~`(?i)^DisableMacie$` or eventName=~`(?i)^DisableOrganizationAdminAccount$` or eventName=~`(?i)^UpdateFindingsFilter$` or eventName=~`(?i)^UpdateMacieSession$` or eventName=~`(?i)^UpdateMemberSession$` or eventName=~`(?i)^UpdateClassificationJob$` 
+    - alert: AWS_RDS_Master_Password_Change
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^rds\.amazonaws\.com$` and responseElements_pendingModifiedValues_masterUserPassword=~`(?i).*` and eventName=~`(?i)^ModifyDBInstance$` 
+    - alert: AWS_Root_Credentials
+      expr: |
+          {job="cloudtrail"} | json | userIdentity_type=~`(?i)^Root$` and eventType!~`(?i)^AwsServiceEvent$` 
+    - alert: AWS_Route_53_Domain_Transfer_Lock_Disabled
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^route53\.amazonaws\.com$` and eventName=~`(?i)^DisableDomainTransferLock$` 
+    - alert: AWS_Route_53_Domain_Transferred_to_Another_Account
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^route53\.amazonaws\.com$` and eventName=~`(?i)^TransferDomainToAnotherAwsAccount$` 
+    - alert: AWS_S3_Bucket_Versioning_Disable
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^PutBucketVersioning$` and requestParameters=~`(?i).*Suspended.*` 
+    - alert: AWS_S3_Bucket_Versioning
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^PutBucketVersioning$` 
+    - alert: AWS_S3_made_public
+      expr: |
+          {job="cloudtrail"} | json | eventName=~`(?i).*PutBucketPublicAccessBlock.*` 
+    - alert: AWS_Security_Group_Port_Opened
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and (eventName=~`(?i)^AuthorizeSecurityGroupIngress$` or eventName=~`(?i)^ModifySecurityGroupRules$`) 
+    - alert: AWS_SecurityHub_Findings_Evasion
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^securityhub\.amazonaws\.com$` and (eventName=~`(?i)^BatchUpdateFindings$` or eventName=~`(?i)^DeleteInsight$` or eventName=~`(?i)^UpdateFindings$` or eventName=~`(?i)^UpdateInsight$`) 
+    - alert: AWS_Snapshot_Backup_Exfiltration
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^ec2\.amazonaws\.com$` and eventName=~`(?i)^ModifySnapshotAttribute$` 
+    - alert: AWS_STS_GetSessionToken_Misuse
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^sts\.amazonaws\.com$` and eventName=~`(?i)^GetSessionToken$` and userIdentity_type=~`(?i)^IAMUser$` 
+    - alert: AWS_Suspicious_SAML_Activity
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^sts\.amazonaws\.com$` and eventName=~`(?i)^AssumeRoleWithSAML$` or eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^UpdateSAMLProvider$` 
+    - alert: AWS_User_Login_Profile_Was_Modified
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^iam\.amazonaws\.com$` and eventName=~`(?i)^UpdateLoginProfile$` and userIdentity_arn!~`(?i).*requestParameters\.userName.*` 
+    - alert: AWS_vm_created
+      expr: |
+          {job="cloudtrail"} | json | eventName=~`(?i)^RunInstances$` 
+    - alert: Potential_Bucket_Enumeration_on_AWS
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^s3\.amazonaws\.com$` and eventName=~`(?i)^ListBuckets$` and type!~`(?i)^AssumedRole$` 
+    - alert: Restore_Public_AWS_RDS_Instance
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^rds\.amazonaws\.com$` and responseElements_publiclyAccessible=~`(?i)^true$` and eventName=~`(?i)^RestoreDBInstanceFromDBSnapshot$` 
+    - alert: SES_Identity_Has_Been_Deleted
+      expr: |
+          {job="cloudtrail"} | json | eventSource=~`(?i)^ses\.amazonaws\.com$` and eventName=~`(?i)^DeleteIdentity$` 
+    - alert: Azure_Application_Gateway_Modified_or_Deleted
+      expr: |
+          {job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/APPLICATIONGATEWAYS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/APPLICATIONGATEWAYS/DELETE$` 
+    - alert: Azure_Application_Security_Group_Modified_or_Deleted
+      expr: |
+          {job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/APPLICATIONSECURITYGROUPS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/APPLICATIONSECURITYGROUPS/DELETE$` 
+    - alert: Azure_Container_Registry_Created_or_Deleted
+      expr: |
+          {job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.CONTAINERREGISTRY/REGISTRIES/WRITE$` or operationName=~`(?i)^MICROSOFT\.CONTAINERREGISTRY/REGISTRIES/DELETE$` 
+    - alert: Azure_Device_No_Longer_Managed_or_Compliant
+      expr: |
+          {job="azurelog"} | json | properties_message=~`(?i)^Device\ no\ longer\ compliant$` or properties_message=~`(?i)^Device\ no\ longer\ managed$` 
+    - alert: Azure_Device_or_Configuration_Modified_or_Deleted
+      expr: |
+          {job="azurelog"} | json | properties_message=~`(?i)^Delete\ device$` or properties_message=~`(?i)^Delete\ device\ configuration$` or properties_message=~`(?i)^Update\ device$` or properties_message=~`(?i)^Update\ device\ configuration$` 
+    - alert: Azure_DNS_Zone_Modified_or_Deleted
+      expr: |
+          {job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/DNSZONES.*` and (operationName=~`(?i).*/WRITE$` or operationName=~`(?i).*/DELETE$`) 
+    - alert: Azure_Firewall_Modified_or_Deleted
+      expr: |
+          {job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/DELETE$` 
+    - alert: Azure_Firewall_Rule_Collection_Modified_or_Deleted
+      expr: |
+          {job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/APPLICATIONRULECOLLECTIONS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/APPLICATIONRULECOLLECTIONS/DELETE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/NATRULECOLLECTIONS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/NATRULECOLLECTIONS/DELETE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/NETWORKRULECOLLECTIONS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/AZUREFIREWALLS/NETWORKRULECOLLECTIONS/DELETE$` 
+    - alert: Azure_Firewall_Rule_Configuration_Modified_or_Deleted
+      expr: |
+          {job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/RULECOLLECTIONGROUPS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/RULECOLLECTIONGROUPS/DELETE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/RULEGROUPS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/RULEGROUPS/DELETE$` 
+    - alert: Azure_Keyvault_Key_Modified_or_Deleted
+      expr: |
+          {job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/UPDATE/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/CREATE$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/CREATE/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/IMPORT/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/RECOVER/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/RESTORE/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/DELETE$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/BACKUP/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/KEYS/PURGE/ACTION$` 
+    - alert: Azure_Keyvault_Secrets_Modified_or_Deleted
+      expr: |
+          {job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/WRITE$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/DELETE$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/BACKUP/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/PURGE/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/UPDATE/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/RECOVER/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/RESTORE/ACTION$` or operationName=~`(?i)^MICROSOFT\.KEYVAULT/VAULTS/SECRETS/SETSECRET/ACTION$` 
+    - alert: Azure_Network_Firewall_Policy_Modified_or_Deleted
+      expr: |
+          {job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/JOIN/ACTION$` or operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/CERTIFICATES/ACTION$` or operationName=~`(?i)^MICROSOFT\.NETWORK/FIREWALLPOLICIES/DELETE$` 
+    - alert: Azure_Network_Security_Group_Inbound_Rule_Added_or_Modified
+      expr: |
+          {job="azurelog"} | json | operationName=~`(?i).*WRITE$` and operationName=~`(?i)^MICROSOFT\.NETWORK/NETWORKSECURITYGROUPS.*` 
+    - alert: Azure_New_CloudShell_Created
+      expr: |
+          {job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.PORTAL/CONSOLES/WRITE$` 
+    - alert: Azure_Owner_Removed_From_Application_or_Service_Principal
+      expr: |
+          {job="azurelog"} | json | properties_message=~`(?i)^Remove\ owner\ from\ service\ principal$` or properties_message=~`(?i)^Remove\ owner\ from\ application$` 
+    - alert: Azure_Point_to_site_VPN_Modified_or_Deleted
+      expr: |
+          {job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/P2SVPNGATEWAYS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/P2SVPNGATEWAYS/DELETE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/P2SVPNGATEWAYS/RESET/ACTION$` or operationName=~`(?i)^MICROSOFT\.NETWORK/P2SVPNGATEWAYS/GENERATEVPNPROFILE/ACTION$` or operationName=~`(?i)^MICROSOFT\.NETWORK/P2SVPNGATEWAYS/DISCONNECTP2SVPNCONNECTIONS/ACTION$` or operationName=~`(?i)^MICROSOFT\.NETWORK/P2SVPNGATEWAYS/PROVIDERS/MICROSOFT\.INSIGHTS/DIAGNOSTICSETTINGS/WRITE$` 
+    - alert: Azure_Service_Principal_Created
+      expr: |
+          {job="azurelog"} | json | properties_message=~`(?i)^Add\ service\ principal$` 
+    - alert: Azure_Service_Principal_Removed
+      expr: |
+          {job="azurelog"} | json | properties_message=~`(?i)^Remove\ service\ principal$` 
+    - alert: Azure_storage_configuration_updated
+      expr: |
+          {job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.STORAGE/STORAGEACCOUNTS/BLOBSERVICES/CONTAINERS/WRITE$` and records_resultType=~`(?i)^Success$` 
+    - alert: Azure_Suppression_Rule_Created
+      expr: |
+          {job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.SECURITY/ALERTSSUPPRESSIONRULES/WRITE$` 
+    - alert: Azure_vm_created
+      expr: |
+          {job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.COMPUTE/VIRTUALMACHINES.*` and operationName=~`(?i).*/WRITE$` and resultType=~`(?i)^Success$` 
+    - alert: Azure_VPN_Connection_Modified_or_Deleted
+      expr: |
+          {job="azurelog"} | json | operationName=~`(?i)^MICROSOFT\.NETWORK/VPNGATEWAYS/VPNCONNECTIONS/WRITE$` or operationName=~`(?i)^MICROSOFT\.NETWORK/VPNGATEWAYS/VPNCONNECTIONS/DELETE$` 
+    - alert: Granting_Of_Permissions_To_An_Account
+      expr: |
+          {job="azurelog"} |~ `(?i)Microsoft\.Authorization/roleAssignments/write` 
+    - alert: Connection_from_non_authorized_geo_location
+      expr: |
+          {job="gcplog"} | json | country_iso_code=~`(?i).*IN.*` or continent_code=~`(?i).*AS.*` or continent_code=~`(?i).*ASA.*` 
+    - alert: GCP_bucket_configuration_updated
+      expr: |
+          {job="gcplog"} | json | methodName=~`(?i)^storage\.buckets\.update$` 
+    - alert: GCP_Firewall_Rule_Created_or_Policy_Rule_Added
+      expr: |
+          {job="gcplog"} | json | (protoPayload_methodName=~`(?i)^beta\.compute\.firewalls\.insert$` or protoPayload_methodName=~`(?i)^v1\.compute\.firewalls\.patch$` or protoPayload_methodName=~`(?i)^beta\.compute\.networkFirewallPolicies\.addRule$` or protoPayload_methodName=~`(?i)^beta\.compute\.networkFirewallPolicies\.patchRule$`) and resource_type=~`(?i)^gce_firewall_rule$` and operation_first=~`(?i)^true$` 
+    - alert: GCP_User_Granted_Admin_Role
+      expr: |
+          {job="gcplog"} | json | (protoPayload_methodName=~`(?i)^SetIamPolicy$` or protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.SetIamPolicy$` or protoPayload_methodName=~`(?i)^google\.cloud\.resourcemanager\.v1\.SetIamPolicy$`) and protoPayload_serviceData_policyDelta_bindingDeltas_action=~`(?i)^ADD$` and protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i)^roles/owner$` or (protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateServiceAccount$` or protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateUser$`) and protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i)^roles/owner$` 
+    - alert: gcp_vm_created
+      expr: |
+          {job="gcplog"} | json | protoPayload_methodName=~`(?i)^beta\.compute\.instances\.insert$` 
+    - alert: GCP_VPC_Network_Deletion
+      expr: |
+          {job="gcplog"} | json | protoPayload_methodName=~`(?i)^v1\.compute\.networks\.delete$` 
+    - alert: GCP_VPC_Route_Created
+      expr: |
+          {job="gcplog"} | json | protoPayload_methodName=~`(?i)^v1\.compute\.routes\.insert$` and resource_type=~`(?i)^gce_route$` 
+    - alert: GCP_VPC_Route_Deleted
+      expr: |
+          {job="gcplog"} | json | protoPayload_methodName=~`(?i)^v1\.compute\.routes\.delete$` and resource_type=~`(?i)^gce_route$` 
+    - alert: Google_Cloud_IAM_Custom_Role_Created
+      expr: |
+          {job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateRole$` or gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.UndeleteRole$` 
+    - alert: Google_Cloud_IAM_Custom_Role_Deleted
+      expr: |
+          {job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.DeleteRole$` and gcp_audit_protoPayload_response_deleted=~`(?i)^true$` 
+    - alert: Google_Cloud_IAM_Member_Assigned_Owner_OR_Admin_Role
+      expr: |
+          {job="gcplog"} | json | gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_action=~`(?i)^ADD$` and gcp_audit_protoPayload_methodName=~`(?i)^SetIamPolicy$` and (gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/resourcemanager\.organizationAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/resourcemanager\.projectIamAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/accesscontextmanager\.policyAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/axt\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/actions\.Admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/serviceconsumermanagement\.tenancyUnitsAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/advisorynotifications\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/recommender\.alloydbAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.listingAdmin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/gkemulticloud\.admin.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.jobOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.modelOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/ml\.operationOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/analyticshub\.subscriptionOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/bigquery\.dataOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/certificatemanager\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/chat\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudasset\.owner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudbuild\.integrationsOwner.*` or gcp_audit_protoPayload_serviceData_policyDelta_bindingDeltas_role=~`(?i).*roles/cloudbuild\.workerPoolOwner.*`) 
+    - alert: Google_Cloud_Logging_Bucket_Created
+      expr: |
+          {job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.CreateBucket$` or gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UndeleteBucket$` 
+    - alert: Google_Cloud_Logging_Bucket_Deleted
+      expr: |
+          {job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.DeleteBucket$` 
+    - alert: Google_Cloud_Logging_Bucket_Modified
+      expr: |
+          {job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UpdateBucket$` 
+    - alert: Google_Cloud_Logging_Sink_Deleted
+      expr: |
+          {job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.DeleteSink$` 
+    - alert: Google_Cloud_Logging_Sink_Updated
+      expr: |
+          {job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.logging\.v2\.ConfigServiceV2\.UpdateSink$` 
+    - alert: Google_Cloud_Service_Account_Key_Created
+      expr: |
+          {job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.CreateServiceAccountKey$` 
+    - alert: Google_Cloud_Service_Account_Key_Deleted
+      expr: |
+          {job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^google\.iam\.admin\.v1\.DeleteServiceAccountKey$` 
+    - alert: Google_Cloud_Storage_Bucket_s_IAM_Permissions_Modified
+      expr: |
+          {job="gcplog"} | json | gcp_audit_protoPayload_methodName=~`(?i)^storage\.setIamPermissions$` 
+    - alert: Google_Cloud_Storage_Buckets_Created
+      expr: |
+          {job="gcplog"} | json | gcp_audit_method_name=~`(?i)^storage\.buckets\.insert$` or gcp_audit_method_name=~`(?i)^storage\.buckets\.create$` 
+    - alert: Google_Cloud_Storage_Buckets_Deleted
+      expr: |
+          {job="gcplog"} | json | gcp_audit_method_name=~`(?i)^storage\.buckets\.delete$` 
+    - alert: Google_Cloud_Storage_Buckets_Modified_or_Deleted
+      expr: |
+          {job="gcplog"} | json | gcp_audit_method_name=~`(?i)^storage\.buckets\.insert$` or gcp_audit_method_name=~`(?i)^storage\.buckets\.create$` 
+    - alert: Malicious IP Detected
+      expr: |
+        {job!=""} |~ "$BLOCK_LIST"
+
+
