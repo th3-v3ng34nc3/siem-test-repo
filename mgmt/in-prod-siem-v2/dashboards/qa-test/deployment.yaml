@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-dash
+  namespace: dashboard-qa-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana-dash
+  template:
+    metadata:
+      labels:
+        app: grafana-dash
+    spec:
+      securityContext:
+        fsGroup: 472
+      containers:
+      - name: grafana-dash
+        image: harbor.do.accuknox.com/branded-grafana/grafana:feb-22
+        env:
+        - name: GF_SERVER_ROOT_URL
+          value: "%(protocol)s://in.siem.v2.accuknox.com/dashboards/qa-test"
+        - name: GF_SERVER_SERVE_FROM_SUB_PATH
+          value: "true"
+        - name: GF_SECURITY_ADMIN_USER
+          value: qa-test-admin
+        ports:
+          - containerPort: 3000
+        volumeMounts:
+          - name: grafana-storage
+            mountPath: /var/lib/grafana
+      volumes:
+        - name: grafana-storage
+          persistentVolumeClaim:
+            claimName: grafana-sqlite-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-dash
+  namespace: dashboard-qa-test
+spec:
+  ports:
+    - port: 3000
+      targetPort: 3000
+  selector:
+    app: grafana-dash

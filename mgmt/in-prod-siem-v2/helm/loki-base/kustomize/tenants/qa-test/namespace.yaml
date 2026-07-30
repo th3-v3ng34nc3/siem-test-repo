@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tenant-qa-test
+  labels:
+    accuknox: "59"
+    tenant: "qa-test"
+    env: "in-prod-siem-v2"

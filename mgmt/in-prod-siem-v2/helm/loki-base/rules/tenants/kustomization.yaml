@@ -3,3 +3,5 @@ resources:
   - canary-user
   - sabpaisa
   - go-yubi
+  - qa-test
+  - digitap-ai

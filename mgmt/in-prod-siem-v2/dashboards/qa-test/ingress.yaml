@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-ingress
+  namespace: dashboard-qa-test
+  annotations:
+    # If using Nginx Ingress, these annotations help manage path stripping
+    kubernetes.io/ingress.class: "nginx"
+    nginx.org/mergeable-ingress-type: "minion"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: in.siem.v2.accuknox.com
+    http:
+      paths:
+      - path: /dashboards/qa-test
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana-dash
+            port:
+              number: 80
