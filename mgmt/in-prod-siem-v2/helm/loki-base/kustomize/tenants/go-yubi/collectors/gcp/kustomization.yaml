@@ -1,0 +1,5 @@
+resources:
+- deployment.yaml
+- gcp-alloy-secrets-cgf.yaml
+- gcp-logstash-config-external-secrets.yaml
+- gcp-logstash-key-external-secrets.yaml

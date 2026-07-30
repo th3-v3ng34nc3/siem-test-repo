@@ -5,3 +5,7 @@ tenants:
     password: ref+vault://siem/in-prod-siem-v2/tenants/sabpaisa/loki_tenant/#password
   - tenant: ref+vault://siem/in-prod-siem-v2/tenants/go-yubi/loki_tenant/#username
     password: ref+vault://siem/in-prod-siem-v2/tenants/go-yubi/loki_tenant/#password
+  - tenant: ref+vault://siem/in-prod-siem-v2/tenants/qa-test/loki_tenant/#username
+    password: ref+vault://siem/in-prod-siem-v2/tenants/qa-test/loki_tenant/#password
+  - tenant: ref+vault://siem/in-prod-siem-v2/tenants/digitap-ai/loki_tenant/#username
+    password: ref+vault://siem/in-prod-siem-v2/tenants/digitap-ai/loki_tenant/#password

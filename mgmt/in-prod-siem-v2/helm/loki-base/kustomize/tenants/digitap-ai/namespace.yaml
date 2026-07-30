@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tenant-digitap-ai
+  labels:
+    accuknox: "274"
+    tenant: "digitap-ai"
+    env: "in-prod-siem-v2"
