@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tenant-go-yubi
+  labels:
+    accuknox: "270"
+    tenant: "go-yubi"
+    env: "in-prod-siem-v2"
