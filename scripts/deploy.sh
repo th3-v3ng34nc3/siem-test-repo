@@ -28,7 +28,7 @@ helmfile init
 vault_check_connect
 #helmfile write-values
 #helmfile destroycd
-#helmfile sync
+helmfile sync
 helmfile -l name=loki sync
 helmfile -l name=kustomize sync
 helmfile -l name=rules sync

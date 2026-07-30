@@ -1,0 +1,61 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: detection-rule-job
+  namespace: tenant-sabpaisa
+spec:
+  backoffLimit: 3          # Max retries
+  ttlSecondsAfterFinished: 600 # Cleanup job 10mins after finishing
+  template:
+    metadata:
+      labels:
+        app: detection-rule-job
+    spec:
+      volumes:
+      - name: tenant-detection-rules
+        configMap:
+          name: tenant-detection-rules
+      - name: tenant-custom-detection-rules
+        configMap:
+          name: tenant-custom-detection-rules
+      - name: loki-scripts
+        configMap:
+          name: loki-scripts
+      containers:
+      - name: detection-rule
+        image: bitnami/kubectl:latest
+        command:
+        - "bash"
+        - "/scripts/update.sh"
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: TENANT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: tenant-password
+              key: username
+        - name: TENANT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: tenant-password
+              key: password
+        - name: LOKI_GW_SVC
+          value: "loki-gateway.loki.svc.cluster.local:80"
+        volumeMounts:
+        - name: loki-scripts
+          mountPath: /scripts
+          readOnly: true
+        - name: tenant-custom-detection-rules
+          mountPath: /rules/custom
+          readOnly: true
+        - name: tenant-detection-rules
+          mountPath: /rules/common
+          readOnly: true
+        resources:
+          limits:
+            cpu: "200m"
+            memory: "100Mi"
+          requests:
+            cpu: "50m"
+            memory: "50Mi"
+      restartPolicy: Never

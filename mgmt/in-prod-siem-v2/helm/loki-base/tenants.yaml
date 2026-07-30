@@ -1,0 +1,7 @@
+tenants:
+  - tenant: ref+vault://siem/in-prod-siem-v2/tenants/canary-user/loki_tenant/#username
+    password: ref+vault://siem/in-prod-siem-v2/tenants/canary-user/loki_tenant/#password
+  - tenant: ref+vault://siem/in-prod-siem-v2/tenants/sabpaisa/loki_tenant/#username
+    password: ref+vault://siem/in-prod-siem-v2/tenants/sabpaisa/loki_tenant/#password
+  - tenant: ref+vault://siem/in-prod-siem-v2/tenants/go-yubi/loki_tenant/#username
+    password: ref+vault://siem/in-prod-siem-v2/tenants/go-yubi/loki_tenant/#password

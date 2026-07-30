@@ -1,0 +1,7 @@
+
+resources:
+- loki-scripts.yaml
+- retreiver-cm-rules-patch.yaml
+- threat-intel-rule-job.yaml
+- threat-intel-rule-cronjob.yaml
+- threat-intel-perms.yaml
