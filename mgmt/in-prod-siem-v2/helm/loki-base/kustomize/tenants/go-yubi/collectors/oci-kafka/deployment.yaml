@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oci-oci
+  namespace: tenant-go-yubi
+  labels:
+    tenant: go-yubi
+    collector: oci
+    type: oci
+spec:
+  selector:
+    matchLabels:
+      app: oci-oci
+  template:
+    metadata:
+      labels:
+        app: oci-oci
+    spec:
+      volumes:
+        - name:  oci-alloy-oci
+          secret:
+            secretName:  oci-alloy-oci
+        - name: oci-logstash-oci
+          secret:
+            secretName: oci-logstash-oci
+        - name: oci-key-oci
+          secret:
+            secretName: oci-key-oci
+      containers:
+      - name: alloy
+        image: grafana/alloy:v1.12.2
+        imagePullPolicy: IfNotPresent
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        args:
+        - run
+        - /etc/alloy/config.alloy
+        - --storage.path=/var/lib/alloy/data
+        - --disable-reporting
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        volumeMounts:
+          - name: oci-alloy-oci
+            readOnly: true
+            mountPath: /etc/alloy/
+      - name: logstash
+        image: public.ecr.aws/k9v9d5v2/admin-tools/crd-collectors/logstash:v1.0.1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9091
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9091
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        args:
+          - "-f"
+          - "/configs/pipeline.conf"
+        volumeMounts:
+          - name: oci-logstash-oci
+            readOnly: true
+            mountPath: /configs/
+          # - name: oci-key-oci
+          #   readOnly: true
+          #   mountPath: /oci/
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m" 

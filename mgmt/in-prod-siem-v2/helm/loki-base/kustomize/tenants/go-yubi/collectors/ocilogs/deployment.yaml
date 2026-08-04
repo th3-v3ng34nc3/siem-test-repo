@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: http-ocilogs
+  namespace: tenant-go-yubi
+  labels:
+    tenant: go-yubi
+    collector: ocilogs
+    type: http
+spec:
+  selector:
+    matchLabels:
+      app: http-ocilogs
+  template:
+    metadata:
+      labels:
+        app: http-ocilogs
+    spec:
+      volumes:
+        - name:  http-ocilogs
+          secret:
+            secretName:  http-ocilogs
+      containers:
+      - name: http-ocilogs
+        image: grafana/alloy:v1.12.2
+        imagePullPolicy: IfNotPresent
+        args:
+        - run
+        - /etc/alloy/config.alloy
+        - --storage.path=/var/lib/alloy/data
+        - --disable-reporting
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        volumeMounts:
+          - name: http-ocilogs
+            readOnly: true
+            mountPath: /etc/alloy/

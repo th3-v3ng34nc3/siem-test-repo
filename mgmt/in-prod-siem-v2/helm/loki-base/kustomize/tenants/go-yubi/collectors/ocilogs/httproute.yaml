@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: http-ocilogs
+  namespace: tenant-go-yubi
+  annotations:
+    tenant: go-yubi
+    collector: ocilogs
+    type: http
+    env: in-prod-siem-v2
+    kubernetes.io/ingress.class: "nginx"
+    nginx.org/mergeable-ingress-type: "minion"
+    nginx.org/rewrites: "serviceName=http-ocilogs rewrite=/loki/api/v1/raw"
+    nginx.org/auth-type: "basic"
+    nginx.org/auth-secret: "htpasswd"
+    nginx.org/client-max-body-size: "50m"
+spec:
+  rules:
+    - host: in.siem.v2.accuknox.com
+      http:
+        paths:
+          - path: /in-prod-siem-v2/go-yubi/5ef5a24c54231d73ec76d8a013bfb3875793bc60b5e50590ef9b2638/ocilogs/push
+            pathType: Prefix
+            backend:
+              service:
+                name: http-ocilogs
+                port:
+                  number: 8080

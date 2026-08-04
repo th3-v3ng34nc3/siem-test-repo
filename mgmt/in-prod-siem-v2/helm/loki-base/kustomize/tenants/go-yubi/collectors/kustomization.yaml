@@ -2,3 +2,5 @@
 resources:
   - gcp
   - cloudtrail
+  - oci-kafka
+  - ocilogs

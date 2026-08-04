@@ -1,0 +1,5 @@
+resources:
+- deployment.yaml
+- oci-alloy-secrets-cgf.yaml
+- oci-logstash-config-external-secrets.yaml
+- oci-logstash-key-external-secrets.yaml
