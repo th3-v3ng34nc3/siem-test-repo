@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: http-devops-int
+  namespace: tenant-qa-test
+  labels:
+    tenant: qa-test
+    collector: devops-int
+    type: http
+spec:
+  selector:
+    matchLabels:
+      app: http-devops-int
+  template:
+    metadata:
+      labels:
+        app: http-devops-int
+    spec:
+      volumes:
+        - name:  http-devops-int
+          secret:
+            secretName:  http-devops-int
+      containers:
+      - name: http-devops-int
+        image: grafana/alloy:v1.12.2
+        imagePullPolicy: IfNotPresent
+        args:
+        - run
+        - /etc/alloy/config.alloy
+        - --storage.path=/var/lib/alloy/data
+        - --disable-reporting
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        volumeMounts:
+          - name: http-devops-int
+            readOnly: true
+            mountPath: /etc/alloy/

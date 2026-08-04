@@ -2,3 +2,4 @@
 resources:
   - syslog
   - cloudtrail
+  - devops-int

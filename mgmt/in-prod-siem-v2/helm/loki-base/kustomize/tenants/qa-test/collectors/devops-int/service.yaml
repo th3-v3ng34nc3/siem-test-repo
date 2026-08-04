@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: http-devops-int
+  namespace: tenant-qa-test
+  annotations:
+    tenant: qa-test
+    collector: devops-int
+    type: http
+spec:
+  selector:
+    app: http-devops-int
+  ports:
+  - port: 8080
+    targetPort: 8080
