@@ -18,3 +18,7 @@ vault read auth/approle/role/siem-creator/role-id
 vault write -f auth/approle/role/siem-creator/secret-id
 
 vault write auth/approle/login role_id="<ROLE_ID>" secret_id="<SECRET_ID>"
+
+
+
+vault write auth/approle/login 
