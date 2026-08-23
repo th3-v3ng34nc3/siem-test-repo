@@ -486,6 +486,26 @@ it isn't stuck.
 
 Before exposing anything publicly, prove the pipeline works purely inside the VM.
 
+⚠️ **If you SSH into the VM yourself first and paste commands directly into that shell** (instead of
+running the whole `ssh "..."` block below from Windows), the `${TESTUSER}`/`${TESTPASS}`/`${NAMESPACE}`/
+etc. variables **will not be set** in that shell — they only exist in the Windows session from Part 5 —
+and curl will silently send the literal string `${TESTUSER}` as the username instead of its value,
+producing a confusing `401`. If you're working directly on the VM, `export` them there first:
+```bash
+export TESTUSER="awsconfige2e"           # whatever you chose in Part 5
+export TESTPASS="<your-generated-password>"
+export NAMESPACE="tenant-awsconfig-e2e"
+export INTEGRATION_ID="aws-config"
+export REGION="us-west-2"
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+```
+and use **double quotes** (`"..."`) around anything containing `$variable`, not single quotes — single
+quotes suppress expansion entirely, which is the other half of this same trap. If you forget which
+password you generated, recover it straight from the deployed secret:
+```bash
+kubectl -n tenant-awsconfig-e2e get secret aws-logstash-aws-config -o jsonpath='{.data.pipeline\.conf}' | base64 -d | grep 'password =>'
+```
+
 ```bash
 ssh -i ~/.ssh/ak_siem_k3s_test aditya@192.168.34.128 "
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
@@ -672,29 +692,44 @@ force-replaced the Lambda resource for any reason — recreating the function wi
 
 ## Part 10 — Confirm the data landed in Loki
 
-**Machine: 🐧 LINUX (k3s VM), via SSH from 🖥️ WINDOWS.**
+**Machine: 🐧 LINUX (k3s VM).** You can run this either wrapped in `ssh ... "..."` from Windows, or — since
+it's just as easy — SSH in first and run it directly on the VM. Either way, use the **heredoc-to-file**
+form below, not a one-line `python3 -c "..."` with escaped quotes: nesting `ssh "..."` around
+`python3 -c "..."` around a Loki query that itself needs `"..."` requires 3 layers of escaping, and it's
+extremely easy to get one layer wrong (this happened in practice while validating this guide — the fix
+below is what actually worked, tested directly on the VM). A heredoc with a **quoted delimiter**
+(`<<'EOF'`) sidesteps all of it: everything between the markers is completely literal, no `$expansion` and
+no `\"` escaping needed, so it's safe whether you paste it locally on the VM or inside an outer `ssh`
+string.
+
+**(LINUX (k3s VM) — paste directly, whether you're already SSH'd in or wrapping this in `ssh ... "..."`):**
 
 ```bash
-ssh -i ~/.ssh/ak_siem_k3s_test aditya@192.168.34.128 "
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-curl -sG http://localhost:3100/loki/api/v1/query_range \
-  --data-urlencode 'query={job=\"awsconfig\"}' \
-  --data-urlencode 'limit=5000' \
-  | python3 -c \"
-import json,sys
-d=json.load(sys.stdin)
-streams=d['data']['result']
-total=sum(len(s['values']) for s in streams)
-print('total log lines in loki for job=awsconfig:', total)
+cat > /tmp/loki_check.py <<'EOF'
+import json, subprocess
+
+result = subprocess.run(
+    ["curl", "-sG", "http://localhost:3100/loki/api/v1/query_range",
+     "--data-urlencode", 'query={job="awsconfig"}',
+     "--data-urlencode", "limit=5000"],
+    capture_output=True, text=True
+)
+d = json.loads(result.stdout)
+streams = d["data"]["result"]
+total = sum(len(s["values"]) for s in streams)
+print("total log lines in loki for job=awsconfig:", total)
 for s in streams[:1]:
-    for v in s['values'][:3]:
+    for v in s["values"][:3]:
         print(v[1][:300])
-\"
-"
+EOF
+python3 /tmp/loki_check.py
 ```
 
 (Requires the `loki-gateway` port-forward from Part 6 still running — if it died, re-run
-`kubectl -n loki port-forward svc/loki-gateway 3100:80 &` first, on the **LINUX (k3s VM)**.)
+`kubectl -n loki port-forward svc/loki-gateway 3100:80 &` first, on the **LINUX (k3s VM)**. Port-forwards
+started with `nohup ... &` don't survive if their parent SSH session/process is killed — including by the
+`pkill -f "[k]ubectl.*port-forward"` gotcha described in Part 11 if you ran that early — so if this
+connection-refuses, that's the first thing to check.)
 
 **Checkpoint**: `total log lines` should roughly match the `configurationItems` count from the Lambda logs
 in Part 9 (plus 1 if you also ran the Part 6 sanity check). Sample records should show real resource data
@@ -773,6 +808,8 @@ git status --short
 | Collector pod stuck `ContainerCreating` for minutes | 🐧 Linux (k3s VM) | Cold image pull (Alloy ~154 MB + custom Logstash image) on first deploy | Normal — check `kubectl describe pod` for `Pulling image` (fine) vs. `ImagePullBackOff` (not fine); just wait or re-run `rollout status` |
 | Terraform plan shows the wrong region on every resource | 🖥️ Windows | `region` var not set, or set to the wrong value in `terraform.tfvars` | It's a required variable with no default specifically so this can't be silently wrong — set it explicitly to match the bucket's actual region from Part 3 |
 | `aws s3api get-bucket-notification-configuration` returns existing config before you've applied anything | 🖥️ Windows / AWS | The bucket is shared with another trigger (e.g. CloudTrail) | **Do not proceed as-is** — `aws_s3_bucket_notification` will replace, not merge, the bucket's notification config. Use a different bucket, or extend the module. |
+| Part 6's auth test returns `401` even with "correct" credentials, when pasted directly into an already-open VM shell | 🐧 Linux (k3s VM) | `${TESTUSER}`/`${TESTPASS}`/etc. were only ever set in the *Windows* session (Part 5); pasted raw into the VM's own shell, curl sends the literal string `${TESTUSER}` as the username | `export` the same variables in that VM shell first (see the callout at the top of Part 6), and use double quotes around anything with `$variable`, not single quotes. Recover a forgotten password straight from the deployed secret: `kubectl -n tenant-awsconfig-e2e get secret aws-logstash-aws-config -o jsonpath='{.data.pipeline\.conf}' \| base64 -d \| grep 'password =>'` |
+| Part 10's Loki-check command fails with `SyntaxError: unterminated string literal`, then bash tries to run the leftover Python code as shell commands (`import: command not found`, etc.) | 🐧 Linux (k3s VM) | The original one-liner nested `ssh "..."` around `python3 -c "..."` around a Loki query needing `"..."` — three layers of quoting/escaping, easy to break one layer when pasting outside its intended outer `ssh` wrapper | Use the heredoc-to-file form in Part 10 (`cat > /tmp/loki_check.py <<'EOF' ... EOF`) instead — a quoted heredoc delimiter needs zero escaping and is safe to paste anywhere |
 
 ---
 
