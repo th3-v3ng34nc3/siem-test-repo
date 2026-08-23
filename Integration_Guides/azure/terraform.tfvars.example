@@ -1,0 +1,29 @@
+# ===========================================
+# Required Variables — MUST be filled in
+# ===========================================
+
+# Azure subscription ID where resources will be created
+subscription_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+
+# ===========================================
+# Optional Variables — defaults are fine
+# ===========================================
+
+# Resource Group
+location            = "East US"
+resource_group_name = "accuknox-cdr"
+
+# Event Hub Namespace
+event_hub_namespace_prefix     = "accuknox-cdr"
+event_hub_namespace_sku        = "Basic"          # Basic | Standard | Premium
+event_hub_namespace_capacity   = 1                 # Throughput units
+event_hub_namespace_autoinflate = false
+
+# Event Hub
+event_hub_prefix             = "default"
+event_hub_partition_count    = 1
+event_hub_message_retention  = 1   # Days
+
+# Authorization Rule
+authorization_rule_name_prefix = "logstash"

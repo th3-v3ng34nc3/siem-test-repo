@@ -1,0 +1,27 @@
+# ===========================================
+# Required Variables — MUST be filled in
+# ===========================================
+
+# AccuKnox CDR / SIEM endpoint credentials
+username = "your-accuknox-username"
+password = "your-accuknox-password"
+
+# Target HTTPS endpoint to forward CloudTrail logs to
+target_url = "https://your-accuknox-cdr-endpoint.com/ingest"
+
+# Existing S3 bucket that receives CloudTrail logs
+bucket_name = "your-cloudtrail-s3-bucket"
+bucket_arn  = "arn:aws:s3:::your-cloudtrail-s3-bucket"
+
+
+# ===========================================
+# Optional Variables — defaults are fine
+# ===========================================
+
+# Unique suffix for resource naming
+accuknox_suffix = "accuknox-cloudtrail-collector"
+
+# Lambda chunking config (empty string = use Lambda code defaults)
+chunk_size   = ""   # defaults to 3 MB in lambda code
+line_limit   = ""   # defaults to 1000 lines in lambda code
+insecure_tls = ""   # defaults to false in lambda code ("true" or "false")

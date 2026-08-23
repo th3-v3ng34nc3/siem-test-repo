@@ -9,3 +9,6 @@ threat-intel.bak/**
 # .tfstate files
 *.tfstate
 *.tfstate.*
+.claude
+*.claude
+.claude/

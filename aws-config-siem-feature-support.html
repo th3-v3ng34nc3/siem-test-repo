@@ -1,0 +1,832 @@
+<title>AWS Config SIEM Support</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#F3F4F7; --surface:#FFFFFF; --surface-2:#EAECF1;
+    --text:#191C24; --text-muted:#5B6273; --border:#DBDFE7;
+    --accent:#8C5F19; --accent-strong:#6E4A12; --accent-soft:#F1E3C8;
+    --flow:#2B6E68;
+    --status-new:#8C5F19; --status-modified:#2B6E68; --status-unchanged:#78808F; --status-manual:#A6392F;
+    --status-new-bg:#F1E3C8; --status-modified-bg:#DCEEEC; --status-unchanged-bg:#E9EBEF; --status-manual-bg:#F5DEDB;
+    --code-bg:#1B1E27; --code-text:#E7E8ED; --code-muted:#8891A3; --code-border:#30364A;
+    --shadow: 0 1px 2px rgba(20,22,30,0.04), 0 8px 24px -12px rgba(20,22,30,0.12);
+    --serif:'Newsreader','Iowan Old Style','Georgia',serif;
+    --sans:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+    --mono:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#12141A; --surface:#191C24; --surface-2:#20242F;
+      --text:#E9EAEF; --text-muted:#9BA2B4; --border:#2C3140;
+      --accent:#D4A752; --accent-strong:#E7C077; --accent-soft:#3A2E14; --flow:#57A79F;
+      --status-new:#D4A752; --status-modified:#57A79F; --status-unchanged:#8891A3; --status-manual:#E17D72;
+      --status-new-bg:#332A15; --status-modified-bg:#173230; --status-unchanged-bg:#242835; --status-manual-bg:#3A2220;
+      --code-bg:#0E0F14; --code-text:#E7E8ED; --code-muted:#7C8499; --code-border:#2A2E3C;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#12141A; --surface:#191C24; --surface-2:#20242F;
+    --text:#E9EAEF; --text-muted:#9BA2B4; --border:#2C3140;
+    --accent:#D4A752; --accent-strong:#E7C077; --accent-soft:#3A2E14; --flow:#57A79F;
+    --status-new:#D4A752; --status-modified:#57A79F; --status-unchanged:#8891A3; --status-manual:#E17D72;
+    --status-new-bg:#332A15; --status-modified-bg:#173230; --status-unchanged-bg:#242835; --status-manual-bg:#3A2220;
+    --code-bg:#0E0F14; --code-text:#E7E8ED; --code-muted:#7C8499; --code-border:#2A2E3C;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+  *{ box-sizing:border-box; }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; } }
+  html{ background:var(--bg); }
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:var(--sans); font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased; }
+  a{ color:var(--accent-strong); }
+  a:focus-visible, button:focus-visible, .nav-link:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:2px; }
+  h1,h2,h3,h4{ font-family:var(--serif); font-weight:600; color:var(--text); text-wrap:balance; margin:0; }
+  .page{ max-width:1280px; margin:0 auto; padding:0 24px 96px; display:grid; grid-template-columns:250px minmax(0,1fr); gap:48px; align-items:start; }
+  @media (max-width:920px){ .page{ grid-template-columns:1fr; } }
+  .sidebar{ position:sticky; top:24px; padding-top:40px; display:flex; flex-direction:column; gap:20px; max-height:calc(100vh - 48px); }
+  @media (max-width:920px){ .sidebar{ position:static; max-height:none; padding-top:24px; } }
+  .brand{ display:flex; align-items:baseline; gap:8px; font-family:var(--serif); font-size:1.05rem; font-weight:600; }
+  .brand-mark{ color:var(--accent); }
+  .status-pill{ display:inline-flex; align-items:center; gap:6px; align-self:flex-start; padding:5px 11px; border-radius:100px; background:var(--accent-soft); color:var(--accent-strong); font-family:var(--sans); font-size:0.72rem; font-weight:600; letter-spacing:0.03em; text-transform:uppercase; }
+  .status-pill::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--accent); }
+  .doc-switch{ display:flex; flex-direction:column; gap:4px; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--surface); font-size:0.78rem; }
+  .doc-switch a{ color:var(--text-muted); text-decoration:none; }
+  .doc-switch .current{ color:var(--text); font-weight:600; }
+  nav.toc{ display:flex; flex-direction:column; gap:2px; overflow-y:auto; padding-right:4px; border-top:1px solid var(--border); padding-top:14px; }
+  .nav-link{ display:flex; gap:10px; align-items:baseline; padding:6px 8px; border-radius:6px; color:var(--text-muted); text-decoration:none; font-size:0.86rem; line-height:1.35; transition:background 0.15s ease, color 0.15s ease; }
+  .nav-link:hover{ background:var(--surface-2); color:var(--text); }
+  .nav-num{ font-family:var(--mono); font-size:0.72rem; color:var(--text-muted); min-width:1.4em; }
+  .nav-link.appendix{ border-top:1px solid var(--border); margin-top:8px; padding-top:12px; }
+  main{ min-width:0; padding-top:40px; }
+  header.hero{ display:flex; flex-direction:column; gap:16px; padding-bottom:36px; border-bottom:1px solid var(--border); margin-bottom:40px; }
+  header.hero h1{ font-size:clamp(2.1rem, 4vw, 2.9rem); line-height:1.08; }
+  header.hero .dek{ font-family:var(--serif); font-style:italic; font-size:1.2rem; color:var(--text-muted); max-width:62ch; text-wrap:balance; }
+  .meta-row{ display:flex; flex-wrap:wrap; gap:8px 20px; font-size:0.82rem; color:var(--text-muted); font-family:var(--mono); }
+  .meta-row strong{ color:var(--text); font-weight:600; }
+  .stat-row{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-top:8px; }
+  .stat-tile{ background:var(--surface); padding:16px 18px; display:flex; flex-direction:column; gap:4px; }
+  .stat-value{ font-family:var(--serif); font-weight:600; font-size:1.5rem; font-variant-numeric:tabular-nums; }
+  .stat-label{ font-size:0.74rem; color:var(--text-muted); letter-spacing:0.02em; }
+  section{ margin-bottom:64px; scroll-margin-top:24px; }
+  .section-head{ display:flex; align-items:baseline; gap:14px; margin-bottom:18px; }
+  .section-num{ font-family:var(--mono); color:var(--accent); font-size:0.9rem; font-weight:600; }
+  section h2{ font-size:1.65rem; }
+  section h3{ font-size:1.18rem; margin-top:28px; margin-bottom:10px; }
+  p{ margin:0 0 16px; max-width:70ch; }
+  section > p:last-child{ margin-bottom:0; }
+  ul, ol{ margin:0 0 16px; padding-left:1.3em; max-width:68ch; }
+  li{ margin-bottom:7px; }
+  li:last-child{ margin-bottom:0; }
+  strong{ font-weight:600; }
+  code.inline{ font-family:var(--mono); font-size:0.87em; background:var(--surface-2); padding:0.12em 0.4em; border-radius:4px; border:1px solid var(--border); }
+  .callout{ border:1px solid var(--border); border-left:3px solid var(--accent); background:var(--surface); border-radius:8px; padding:16px 20px; margin:0 0 24px; max-width:70ch; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout-label{ font-family:var(--sans); font-weight:600; font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent-strong); display:block; margin-bottom:6px; }
+  figure{ margin:28px 0 32px; max-width:100%; }
+  .fig-frame{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px 8px; overflow-x:auto; box-shadow:var(--shadow); }
+  figure svg{ display:block; margin:0 auto; max-width:100%; height:auto; min-width:640px; }
+  figcaption{ margin-top:10px; font-size:0.86rem; color:var(--text-muted); max-width:70ch; }
+  figcaption .fig-tag{ font-family:var(--mono); font-weight:600; color:var(--text); margin-right:6px; }
+  .code-block{ margin:0 0 24px; border-radius:10px; overflow:hidden; border:1px solid var(--code-border); box-shadow:var(--shadow); }
+  .code-head{ display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--code-bg); border-bottom:1px solid var(--code-border); }
+  .code-path{ font-family:var(--mono); font-size:0.82rem; color:var(--code-text); overflow-x:auto; white-space:nowrap; }
+  .code-block pre{ margin:0; padding:16px 18px; background:var(--code-bg); overflow-x:auto; }
+  .code-block code{ font-family:var(--mono); font-size:0.83rem; line-height:1.6; color:var(--code-text); white-space:pre; }
+  .code-block.term .code-path{ color:var(--code-muted); }
+  .code-block.term code .ok{ color:#8FCB8A; }
+  .chip{ display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:100px; font-family:var(--sans); font-size:0.68rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; white-space:nowrap; }
+  .chip--new{ background:var(--status-new-bg); color:var(--status-new); }
+  .chip--modified{ background:var(--status-modified-bg); color:var(--status-modified); }
+  .chip--unchanged{ background:var(--status-unchanged-bg); color:var(--status-unchanged); }
+  .chip--manual{ background:var(--status-manual-bg); color:var(--status-manual); }
+  .table-wrap{ overflow-x:auto; border:1px solid var(--border); border-radius:10px; margin:0 0 24px; box-shadow:var(--shadow); }
+  table{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  th, td{ text-align:left; padding:10px 16px; font-size:0.87rem; border-bottom:1px solid var(--border); vertical-align:top; }
+  th{ font-family:var(--sans); font-weight:600; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted); background:var(--surface-2); }
+  tr:last-child td{ border-bottom:none; }
+  td.path{ font-family:var(--mono); font-size:0.82rem; }
+  .steps{ list-style:none; padding:0; margin:0 0 24px; display:flex; flex-direction:column; gap:0; max-width:70ch; }
+  .steps li{ display:grid; grid-template-columns:32px 1fr; gap:14px; padding:14px 0; border-bottom:1px solid var(--border); margin:0; }
+  .steps li:last-child{ border-bottom:none; }
+  .step-num{ font-family:var(--serif); font-weight:600; font-size:1.1rem; color:var(--accent); }
+  .steps h4{ font-size:1rem; margin-bottom:4px; font-family:var(--sans); font-weight:600; }
+  .steps p{ margin:0; color:var(--text-muted); font-size:0.92rem; }
+  .req-list{ list-style:none; padding:0; margin:0 0 24px; display:flex; flex-direction:column; gap:10px; max-width:70ch; }
+  .req-list li{ display:grid; grid-template-columns:44px 1fr; gap:14px; align-items:start; border:1px solid var(--border); border-radius:8px; padding:12px 16px; background:var(--surface); }
+  .req-id{ font-family:var(--mono); font-weight:700; color:var(--accent); font-size:0.82rem; padding-top:2px; }
+  .req-list p{ margin:0; font-size:0.92rem; }
+  .req-list strong{ display:block; margin-bottom:2px; }
+  footer{ border-top:1px solid var(--border); margin-top:24px; padding-top:20px; font-size:0.8rem; color:var(--text-muted); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+</style>
+
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark">🧩</span> AWS Config SIEM Support</div>
+    <span class="status-pill">Doc 2 of 2 · feature support</span>
+    <div class="doc-switch">
+      <span>① Onboarding — Terraform &amp; Lambda <em>(companion doc)</em></span>
+      <span class="current">② SIEM Feature Support</span>
+    </div>
+    <nav class="toc" aria-label="Table of contents">
+      <a class="nav-link" href="#summary"><span class="nav-num">00</span>Summary</a>
+      <a class="nav-link" href="#requirements"><span class="nav-num">01</span>Requirements</a>
+      <a class="nav-link" href="#architecture"><span class="nav-num">02</span>Backend architecture</a>
+      <a class="nav-link" href="#source"><span class="nav-num">03</span>Backend — full source</a>
+      <a class="nav-link" href="#secrets"><span class="nav-num">04</span>Secrets this needs</a>
+      <a class="nav-link" href="#frontend"><span class="nav-num">05</span>Frontend — Grafana</a>
+      <a class="nav-link" href="#localtest"><span class="nav-num">06</span>Testing locally (Docker &amp; k3s)</a>
+      <a class="nav-link" href="#checklist"><span class="nav-num">07</span>Implementation checklist</a>
+      <a class="nav-link appendix" href="#deferred">Deferred / out of scope</a>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="hero">
+      <h1>Adding AWS Config as a first-class SIEM source</h1>
+      <p class="dek">What the SIEM itself needs to change to receive, store, and surface AWS Config data — the ingestion backend and the Grafana frontend. Nothing here is an onboarding runbook; it's the feature being built.</p>
+      <div class="meta-row">
+        <span><strong>Scope:</strong> ak-prod-siem repo only</span>
+        <span><strong>New template:</strong> templates/aws-config-collector-tpl/</span>
+        <span><strong>Status:</strong> not yet added to the repo</span>
+      </div>
+      <div class="stat-row">
+        <div class="stat-tile"><span class="stat-value">6</span><span class="stat-label">new backend files, same shape as CloudTrail's template</span></div>
+        <div class="stat-tile"><span class="stat-value">0</span><span class="stat-label">new Vault secret paths — existing conventions reused</span></div>
+        <div class="stat-tile"><span class="stat-value">1</span><span class="stat-label">optional Grafana dashboard, provided</span></div>
+        <div class="stat-tile"><span class="stat-value">Docker</span><span class="stat-label">+ k3s — no live cluster needed to test</span></div>
+      </div>
+    </header>
+
+    <section id="summary">
+      <div class="section-head"><span class="section-num">00</span><h2>Summary</h2></div>
+      <p>Doc 1 covers the Lambda that runs in a customer's AWS account and pushes AWS Config data out. This document covers the other end: what has to exist inside <code class="inline">ak-prod-siem</code> so that push has somewhere correct to land.</p>
+      <p>The receiving side is built as a proper, dedicated collector template — <code class="inline">templates/aws-config-collector-tpl/</code> — structured identically to the existing <code class="inline">aws-cloudtrail-collector-tpl</code>, not as a reuse of the simpler no-auth <code class="inline">generic-http-tpl</code>. That match matters: Doc 1's Lambda already sends a per-integration Basic Auth header (<code class="inline">BASIC_USER</code>/<code class="inline">BASIC_PASS</code>), and only the CloudTrail-style template actually checks it. Using the generic template would silently throw that credential away.</p>
+    </section>
+
+    <section id="requirements">
+      <div class="section-head"><span class="section-num">01</span><h2>Requirements</h2></div>
+      <p>What "AWS Config is supported" concretely has to mean, before writing any YAML:</p>
+      <ul class="req-list">
+        <li><span class="req-id">R1</span><p><strong>Accept the push, at two layers of authentication.</strong> The endpoint must check both the tenant's shared credential (nginx) and a credential unique to this one integration (Logstash) — matching the security level every other AWS source already gets, not a weaker one.</p></li>
+        <li><span class="req-id">R2</span><p><strong>Preserve the data as delivered.</strong> Strip only HTTP/Logstash bookkeeping fields (headers, version tags). Every field AWS Config put in <code class="inline">configurationItems</code> must still be there in Loki.</p></li>
+        <li><span class="req-id">R3</span><p><strong>Tag consistently, without blowing up cardinality.</strong> A single stable label, <code class="inline">job="awsconfig"</code>, must be attached to every line — matching the convention every other source label (<code class="inline">cloudtrail</code>, <code class="inline">cloudwatch</code>, <code class="inline">azurelog</code>, <code class="inline">gcplog</code>) already follows. Per-resource fields like <code class="inline">resourceType</code> or <code class="inline">resourceId</code> must <strong>not</strong> become Loki labels — that would create unbounded label cardinality. They stay in the log body, queryable with LogQL's <code class="inline">| json</code> parser instead.</p></li>
+        <li><span class="req-id">R4</span><p><strong>Land in the existing store.</strong> No new database, no new Loki instance — the same multi-tenant Loki every other source already writes to, using the tenant's existing Loki credentials.</p></li>
+        <li><span class="req-id">R5</span><p><strong>Be visible without extra per-tenant work.</strong> Once ingested, it must be queryable in the existing shared Grafana automatically. A dedicated dashboard is a nice-to-have, not a requirement for R5 to be met.</p></li>
+        <li><span class="req-id">R6</span><p><strong>Reuse the existing secret conventions.</strong> No new Vault path shape, no new External Secrets pattern — see <a href="#secrets">Section 4</a>.</p></li>
+        <li><span class="req-id">R7</span><p><strong>Fit the existing deployment mechanism.</strong> A template under <code class="inline">templates/</code>, rendered into <code class="inline">mgmt/&lt;env&gt;/.../collectors/&lt;integration_id&gt;/</code> the same way every other collector already is.</p></li>
+      </ul>
+    </section>
+
+    <section id="architecture">
+      <div class="section-head"><span class="section-num">02</span><h2>Backend architecture</h2></div>
+      <p>One pod, two containers — identical shape to every existing AWS collector. Logstash does the authentication and light cleanup; Alloy does the one thing it's ever allowed to do, which is forward already-clean JSON into Loki.</p>
+      <figure>
+        <div class="fig-frame">
+          <svg viewBox="0 0 1360 300" role="img" aria-label="Architecture: a Lambda in the customer AWS account sends an HTTPS POST to the nginx Ingress, which checks the tenant's shared password. It forwards to a Logstash container on port 9090 inside the collector pod, which checks a second, integration-specific password from Vault, strips bookkeeping fields, and forwards over localhost to an Alloy container on port 8080, which writes to the shared Loki store using the tenant's Loki credentials, queried through Grafana.">
+            <defs>
+              <marker id="d2arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+              </marker>
+              <marker id="d2arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/>
+              </marker>
+            </defs>
+
+            <rect x="230" y="80" width="1120" height="150" rx="10" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-dasharray="4 4"/>
+            <text x="246" y="102" font-family="IBM Plex Sans" font-size="11.5" font-weight="700" letter-spacing="0.06em" fill="currentColor" opacity="0.6">SIEM · KUBERNETES CLUSTER — templates/aws-config-collector-tpl/, one pod</text>
+
+            <rect x="20" y="130" width="150" height="64" rx="8" fill="none" stroke="currentColor" stroke-opacity="0.5" stroke-dasharray="3 3"/>
+            <text x="95" y="155" text-anchor="middle" font-family="IBM Plex Sans" font-size="12.5" font-weight="600" fill="currentColor">Lambda</text>
+            <text x="95" y="171" text-anchor="middle" font-family="IBM Plex Sans" font-size="9.5" fill="currentColor" opacity="0.6">— see Doc 1 —</text>
+
+            <rect x="250" y="130" width="150" height="64" rx="8" fill="none" stroke="currentColor" stroke-opacity="0.6"/>
+            <text x="325" y="153" text-anchor="middle" font-family="IBM Plex Sans" font-size="12.5" font-weight="600" fill="currentColor">nginx Ingress</text>
+            <text x="325" y="168" text-anchor="middle" font-family="IBM Plex Sans" font-size="9.5" fill="currentColor" opacity="0.6">Auth #1: shared</text>
+            <text x="325" y="180" text-anchor="middle" font-family="IBM Plex Sans" font-size="9.5" fill="currentColor" opacity="0.6">tenant htpasswd</text>
+
+            <rect x="470" y="130" width="160" height="64" rx="8" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.75"/>
+            <text x="550" y="150" text-anchor="middle" font-family="IBM Plex Sans" font-size="12.5" font-weight="700" fill="var(--accent-strong)">Logstash :9090</text>
+            <text x="550" y="165" text-anchor="middle" font-family="IBM Plex Sans" font-size="9.5" fill="var(--accent-strong)">Auth #2: per-integration</text>
+            <text x="550" y="177" text-anchor="middle" font-family="IBM Plex Sans" font-size="9.5" fill="var(--accent-strong)">creds from Vault</text>
+
+            <rect x="710" y="130" width="150" height="64" rx="8" fill="none" stroke="currentColor" stroke-opacity="0.6"/>
+            <text x="785" y="153" text-anchor="middle" font-family="IBM Plex Sans" font-size="12.5" font-weight="600" fill="currentColor">Alloy :8080</text>
+            <text x="785" y="168" text-anchor="middle" font-family="IBM Plex Sans" font-size="9.5" fill="currentColor" opacity="0.6">job=&quot;awsconfig&quot;</text>
+            <text x="785" y="180" text-anchor="middle" font-family="IBM Plex Sans" font-size="9.5" fill="currentColor" opacity="0.6">unchanged pattern</text>
+
+            <rect x="930" y="130" width="140" height="64" rx="8" fill="none" stroke="currentColor" stroke-opacity="0.6"/>
+            <text x="1000" y="153" text-anchor="middle" font-family="IBM Plex Sans" font-size="12.5" font-weight="600" fill="currentColor">Loki</text>
+            <text x="1000" y="168" text-anchor="middle" font-family="IBM Plex Sans" font-size="9.5" fill="currentColor" opacity="0.6">shared,</text>
+            <text x="1000" y="180" text-anchor="middle" font-family="IBM Plex Sans" font-size="9.5" fill="currentColor" opacity="0.6">multi-tenant</text>
+
+            <rect x="1150" y="130" width="140" height="64" rx="8" fill="none" stroke="currentColor" stroke-opacity="0.6"/>
+            <text x="1220" y="153" text-anchor="middle" font-family="IBM Plex Sans" font-size="12.5" font-weight="600" fill="currentColor">Grafana</text>
+            <text x="1220" y="168" text-anchor="middle" font-family="IBM Plex Sans" font-size="9.5" fill="currentColor" opacity="0.6">shared,</text>
+            <text x="1220" y="180" text-anchor="middle" font-family="IBM Plex Sans" font-size="9.5" fill="currentColor" opacity="0.6">Section 5</text>
+
+            <line x1="170" y1="162" x2="246" y2="162" stroke="currentColor" stroke-opacity="0.55" stroke-width="1.5" marker-end="url(#d2arrow)"/>
+            <text x="208" y="122" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="currentColor" opacity="0.7">HTTPS POST</text>
+
+            <line x1="400" y1="162" x2="466" y2="162" stroke="var(--accent)" stroke-width="2" marker-end="url(#d2arrow-accent)"/>
+            <text x="433" y="122" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="var(--accent-strong)">rewrite</text>
+
+            <line x1="630" y1="162" x2="706" y2="162" stroke="currentColor" stroke-opacity="0.55" stroke-width="1.5" marker-end="url(#d2arrow)"/>
+            <text x="668" y="122" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="currentColor" opacity="0.7">localhost</text>
+
+            <line x1="860" y1="162" x2="926" y2="162" stroke="currentColor" stroke-opacity="0.55" stroke-width="1.5" marker-end="url(#d2arrow)"/>
+            <text x="893" y="122" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="currentColor" opacity="0.7">loki.write</text>
+
+            <line x1="1070" y1="162" x2="1146" y2="162" stroke="currentColor" stroke-opacity="0.55" stroke-width="1.5" marker-end="url(#d2arrow)"/>
+            <text x="1108" y="122" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="currentColor" opacity="0.7">LogQL</text>
+          </svg>
+        </div>
+        <figcaption><span class="fig-tag">Fig. 1</span>Logstash and Alloy are two containers in <strong>one Kubernetes pod</strong> — "localhost" between them is real, not a network hop. Everything right of Logstash is existing infrastructure, untouched.</figcaption>
+      </figure>
+    </section>
+
+    <section id="source">
+      <div class="section-head"><span class="section-num">03</span><h2>Backend — full source</h2></div>
+      <p>Six files, placed at <code class="inline">templates/aws-config-collector-tpl/</code>. Four are copied unchanged from <code class="inline">aws-cloudtrail-collector-tpl</code> — they were already fully generic, parameterized only by <code class="inline">&lt;intergation_id&gt;</code>/<code class="inline">&lt;tenant_id&gt;</code>, with nothing CloudTrail-specific hardcoded. The two that differ are the Logstash pipeline and the Alloy label.</p>
+
+      <div class="code-block">
+        <div class="code-head"><span class="chip chip--unchanged">Copied as-is from aws-cloudtrail-collector-tpl</span><span class="code-path">deployment.yaml</span></div>
+        <pre><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aws-&lt;intergation_id&gt;
+  namespace: tenant-&lt;tenant_id&gt;
+  annotations:
+    tenant: &lt;tenant_id&gt;
+    collector: &lt;intergation_id&gt;
+    type: aws
+spec:
+  selector:
+    matchLabels:
+      app: aws-&lt;intergation_id&gt;
+  template:
+    metadata:
+      labels:
+        app: aws-&lt;intergation_id&gt;
+    spec:
+      volumes:
+        - name:  aws-alloy-&lt;intergation_id&gt;
+          secret:
+            secretName:  aws-alloy-&lt;intergation_id&gt;
+        - name: aws-logstash-&lt;intergation_id&gt;
+          secret:
+            secretName: aws-logstash-&lt;intergation_id&gt;
+      containers:
+      - name: aws-alloy-&lt;intergation_id&gt;
+        image: grafana/alloy:v1.12.2
+        imagePullPolicy: IfNotPresent
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        args:
+        - run
+        - /etc/alloy/config.alloy
+        - --storage.path=/var/lib/alloy/data
+        - --disable-reporting
+        resources:
+          limits:
+            memory: &quot;128Mi&quot;
+            cpu: &quot;500m&quot;
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+          - name: aws-alloy-&lt;intergation_id&gt;
+            readOnly: true
+            mountPath: /etc/alloy/
+      - name: logstash
+        image: public.ecr.aws/k9v9d5v2/admin-tools/crd-collectors/logstash:v1.0.1
+        imagePullPolicy: IfNotPresent
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9091
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        ports:
+        - containerPort: 9091
+        - containerPort: 9090
+        args:
+          - &quot;-f&quot;
+          - &quot;/configs/pipeline.conf&quot;
+        volumeMounts:
+          - name: aws-logstash-&lt;intergation_id&gt;
+            readOnly: true
+            mountPath: /configs/
+        resources:
+          requests:
+            memory: &quot;128Mi&quot;
+            cpu: &quot;100m&quot;
+</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span class="chip chip--unchanged">Copied as-is</span><span class="code-path">service.yaml</span></div>
+        <pre><code>apiVersion: v1
+kind: Service
+metadata:
+  name: aws-&lt;intergation_id&gt;
+  namespace: tenant-&lt;tenant_id&gt;
+  annotations:
+    tenant: &lt;tenant_id&gt;
+    collector: &lt;intergation_id&gt;
+    type: aws
+spec:
+  selector:
+    app: aws-&lt;intergation_id&gt;
+  ports:
+  - port: 9090
+    targetPort: 9090
+    name: tcp
+</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span class="chip chip--unchanged">Copied as-is</span><span class="code-path">httproute.yaml</span></div>
+        <pre><code>apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aws-&lt;intergation_id&gt;
+  namespace: tenant-&lt;tenant_id&gt;
+  annotations:
+    tenant: &lt;tenant_id&gt;
+    collector: &lt;intergation_id&gt;
+    type: aws
+    env: &lt;siem_env&gt;
+    kubernetes.io/ingress.class: &quot;nginx&quot;
+    nginx.org/mergeable-ingress-type: &quot;minion&quot;
+    nginx.org/rewrites: &quot;serviceName=aws-&lt;intergation_id&gt; rewrite=/loki/api/v1/raw&quot;
+    nginx.org/auth-type: &quot;basic&quot;
+    nginx.org/auth-secret: &quot;htpasswd&quot;
+    nginx.org/client-max-body-size: &quot;50m&quot;
+spec:
+  rules:
+    - host: &lt;siem_domain&gt;
+      http:
+        paths:
+          - path: /&lt;siem_env&gt;/&lt;tenant_id&gt;/&lt;tenant_endpoint&gt;/&lt;intergation_id&gt;/push
+            pathType: Prefix
+            backend:
+              service:
+                name: aws-&lt;intergation_id&gt;
+                port:
+                  number: 9090
+</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span class="chip chip--unchanged">Copied as-is</span><span class="code-path">kustomization.yaml</span></div>
+        <pre><code>resources:
+- aws-external-secrets-cgf.yaml
+- aws-logstash-config-external-secrets.yaml
+- service.yaml
+- httproute.yaml
+- deployment.yaml
+</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span class="chip chip--modified">Modified — job label only</span><span class="code-path">aws-external-secrets-cgf.yaml</span></div>
+        <pre><code>apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: aws-alloy-&lt;intergation_id&gt;
+  namespace: tenant-&lt;tenant_id&gt;
+  labels:
+    tenant: &lt;tenant_id&gt;
+    collector: &lt;intergation_id&gt;
+    type: aws
+spec:
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  refreshPolicy: Periodic
+  refreshInterval: &quot;1h&quot;
+  target:
+    creationPolicy: Owner
+    deletionPolicy: Retain
+    template:
+      engineVersion: v2
+      data:
+        config.alloy: |
+          loki.source.api &quot;raw_logs&quot; {
+            http {
+              listen_address = &quot;0.0.0.0&quot;
+              listen_port    = 8080
+            }
+
+            labels = {
+              job = &quot;awsconfig&quot;,
+              cloud = &quot;aws&quot;,
+            }
+
+            forward_to = [loki.write.loki_out.receiver]
+          }
+
+          loki.write &quot;loki_out&quot; {
+            endpoint {
+              url = &quot;http://loki-gateway.loki.svc.cluster.local/loki/api/v1/push&quot;
+              basic_auth {
+                username = &quot;{{ .username }}&quot;
+                password = &quot;{{ .password }}&quot;
+              }
+            }
+          }
+  data:
+  - secretKey: username
+    remoteRef:
+      key: tenants/&lt;tenant_id&gt;/loki_tenant
+      property: username
+      decodingStrategy: None
+  - secretKey: password
+    remoteRef:
+      key: tenants/&lt;tenant_id&gt;/loki_tenant
+      property: password
+      decodingStrategy: None
+</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span class="chip chip--modified">Modified — trimmed to only what AWS Config needs</span><span class="code-path">aws-logstash-config-external-secrets.yaml</span></div>
+        <pre><code>apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: aws-logstash-&lt;intergation_id&gt;
+  namespace: tenant-&lt;tenant_id&gt;
+  annotations:
+    tenant: &lt;tenant_id&gt;
+    collector: &lt;intergation_id&gt;
+    type: aws
+spec:
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  refreshPolicy: Periodic
+  refreshInterval: &quot;1h&quot;
+  target:
+    creationPolicy: Owner
+    deletionPolicy: Retain
+    template:
+      engineVersion: v2
+      data:
+        pipeline.conf: |
+          input {
+            http {
+              port => 9090
+              type => &quot;awsconfig&quot;
+              codec => json_lines
+              user => &quot;{{ .username }}&quot;
+              password => &quot;{{ .password }}&quot;
+            }
+            http {
+              port => 9091
+              type => &quot;readiness&quot;
+            }
+          }
+
+          filter {
+            if [type] == &quot;readiness&quot; {
+              drop {}
+            }
+
+            json {
+              source => &quot;message&quot;
+            }
+
+            if [type] == &quot;awsconfig&quot; {
+              if [user_agent][original] and [user_agent][original] =~ /^kube-probe/ {
+                drop { }
+              }
+              mutate {
+                remove_field => [ &quot;[@version]&quot;, &quot;[headers]&quot;, &quot;[host]&quot;, &quot;[http]&quot;, &quot;[url]&quot; ]
+              }
+            }
+
+            mutate {
+              remove_field => [ &quot;[event]&quot;, &quot;[message]&quot; ]
+            }
+          }
+
+          output {
+            http {
+              url => &quot;http://localhost:8080/loki/api/v1/raw&quot;
+              http_method => &quot;post&quot;
+              format => &quot;json&quot;
+              content_type => &quot;application/json&quot;
+            }
+          }
+
+  data:
+  - secretKey: username
+    remoteRef:
+      key: tenants/&lt;tenant_id&gt;/aws/&lt;intergation_id&gt;/creds
+      property: username
+  - secretKey: password
+    remoteRef:
+      key: tenants/&lt;tenant_id&gt;/aws/&lt;intergation_id&gt;/creds
+      property: password
+</code></pre>
+      </div>
+
+      <div class="callout">
+        <span class="callout-label">What changed from the CloudTrail pipeline, and why</span>
+        <p><code class="inline">type => "awsconfig"</code> instead of <code class="inline">"aws"</code>, so the filter branch is self-documenting rather than reused across unrelated sources. <strong>No GeoIP</strong> — AWS Config's <code class="inline">configurationItems</code> describe resource state, not API calls, so there's no caller IP field to enrich (unlike CloudTrail's <code class="inline">sourceIPAddress</code>). The <code class="inline">azure</code>/<code class="inline">gcp</code> branches present in CloudTrail's pipeline file were left out entirely, rather than copy-pasted forward into a new file that will never receive that traffic — one fewer thing to misread six months from now.</p>
+      </div>
+    </section>
+
+    <section id="secrets">
+      <div class="section-head"><span class="section-num">04</span><h2>Secrets this needs</h2></div>
+      <p>Nothing new. Both Vault paths already exist as conventions used by CloudTrail and CloudWatch today:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Vault path</th><th>Used by</th><th>Contains</th></tr></thead>
+          <tbody>
+            <tr><td class="path">tenants/&lt;tenant_id&gt;/loki_tenant</td><td>Alloy</td><td>The tenant's existing Loki write credentials — same ones every other collector already uses</td></tr>
+            <tr><td class="path">tenants/&lt;tenant_id&gt;/aws/&lt;intergation_id&gt;/creds</td><td>Logstash</td><td>A per-integration username/password — <strong>this is what Doc 1's Lambda must send</strong> as <code class="inline">BASIC_USER</code>/<code class="inline">BASIC_PASS</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The second path is created the same way every AWS integration's credentials already are today — via <code class="inline">create_tenant_secret()</code> in <code class="inline">scripts/common.sh</code>. Whatever process hands those two values to whoever fills in Doc 1's <code class="inline">terraform.tfvars</code> is an onboarding concern, intentionally out of scope for this document.</p>
+    </section>
+
+    <section id="frontend">
+      <div class="section-head"><span class="section-num">05</span><h2>Frontend — Grafana</h2></div>
+      <p>By default, nothing needs to change. AWS Config data lands in the same Loki instance every tenant's Grafana already queries, so <code class="inline">{job="awsconfig"}</code> is searchable the moment the first log line arrives — same as every other source.</p>
+      <p>A small, purpose-built dashboard makes that data useful without hand-writing LogQL every time. This is provisioned exactly like the existing default <code class="inline">loki-overview</code> dashboard — as one more entry in the Grafana Helm chart's <code class="inline">dashboards</code> value:</p>
+      <div class="code-block">
+        <div class="code-head"><span class="chip chip--modified">Add one entry</span><span class="code-path">templates/loki-base/grafana/grafana-values.yaml</span></div>
+        <pre><code>dashboards:
+  default:
+    loki-overview:
+      gnetId: 13639
+      revision: 1
+      datasource: Loki
+    aws-config-overview:                      # &lt;-- new
+      file: dashboards/aws-config-overview.json
+      datasource: Loki
+</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span class="chip chip--new">New file</span><span class="code-path">templates/loki-base/grafana/dashboards/aws-config-overview.json</span></div>
+        <pre><code>{
+  &quot;title&quot;: &quot;AWS Config Overview&quot;,
+  &quot;uid&quot;: &quot;aws-config-overview&quot;,
+  &quot;schemaVersion&quot;: 39,
+  &quot;time&quot;: { &quot;from&quot;: &quot;now-24h&quot;, &quot;to&quot;: &quot;now&quot; },
+  &quot;refresh&quot;: &quot;1m&quot;,
+  &quot;panels&quot;: [
+    {
+      &quot;id&quot;: 1,
+      &quot;title&quot;: &quot;Configuration items ingested&quot;,
+      &quot;type&quot;: &quot;timeseries&quot;,
+      &quot;datasource&quot;: &quot;Loki&quot;,
+      &quot;gridPos&quot;: { &quot;x&quot;: 0, &quot;y&quot;: 0, &quot;w&quot;: 24, &quot;h&quot;: 8 },
+      &quot;targets&quot;: [
+        {
+          &quot;datasource&quot;: &quot;Loki&quot;,
+          &quot;expr&quot;: &quot;sum(count_over_time({job=\&quot;awsconfig\&quot;}[$__interval]))&quot;,
+          &quot;legendFormat&quot;: &quot;items / interval&quot;
+        }
+      ]
+    },
+    {
+      &quot;id&quot;: 2,
+      &quot;title&quot;: &quot;Top resource types (last 6h)&quot;,
+      &quot;type&quot;: &quot;table&quot;,
+      &quot;datasource&quot;: &quot;Loki&quot;,
+      &quot;gridPos&quot;: { &quot;x&quot;: 0, &quot;y&quot;: 8, &quot;w&quot;: 12, &quot;h&quot;: 9 },
+      &quot;targets&quot;: [
+        {
+          &quot;datasource&quot;: &quot;Loki&quot;,
+          &quot;expr&quot;: &quot;topk(10, sum by (resourceType) (count_over_time({job=\&quot;awsconfig\&quot;} | json | __error__=\&quot;\&quot; [$__range])))&quot;,
+          &quot;format&quot;: &quot;table&quot;
+        }
+      ]
+    },
+    {
+      &quot;id&quot;: 3,
+      &quot;title&quot;: &quot;Recent AWS Config log lines&quot;,
+      &quot;type&quot;: &quot;logs&quot;,
+      &quot;datasource&quot;: &quot;Loki&quot;,
+      &quot;gridPos&quot;: { &quot;x&quot;: 12, &quot;y&quot;: 8, &quot;w&quot;: 12, &quot;h&quot;: 9 },
+      &quot;targets&quot;: [
+        { &quot;datasource&quot;: &quot;Loki&quot;, &quot;expr&quot;: &quot;{job=\&quot;awsconfig\&quot;}&quot; }
+      ]
+    }
+  ]
+}
+</code></pre>
+      </div>
+      <p>Three panels, deliberately: ingestion volume over time, a resource-type breakdown computed on the fly with LogQL's <code class="inline">| json</code> parser (not a Loki label — see R3), and a raw log stream for drilling in. This is intentionally minimal; it's a starting point for whoever owns the actual dashboarding work, not a finished compliance UI.</p>
+    </section>
+
+    <section id="localtest">
+      <div class="section-head"><span class="section-num">06</span><h2>Testing locally — Docker Compose, then k3s</h2></div>
+      <p>Two levels, both entirely local. Neither needs the production cluster, Vault, or an AWS account.</p>
+
+      <h3>Level 1 — Docker Compose: prove the pipeline logic</h3>
+      <p>Runs the exact same container images the pod uses (<code class="inline">grafana/alloy:v1.12.2</code>, the same Logstash image, plus a local Loki and Grafana), wired together the same way — Logstash and Alloy share one network namespace via <code class="inline">network_mode</code>, exactly like two containers in one pod do, so <code class="inline">http://localhost:8080/...</code> in the pipeline config needs no edits.</p>
+      <div class="code-block">
+        <div class="code-head"><span class="chip chip--new">New, local-test only</span><span class="code-path">docker-compose.yaml</span></div>
+        <pre><code>services:
+  loki:
+    image: grafana/loki:3.0.0
+    ports: [&quot;3100:3100&quot;]
+    command: -config.file=/etc/loki/local-config.yaml
+
+  grafana:
+    image: grafana/grafana:11.0.0
+    ports: [&quot;3000:3000&quot;]
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    volumes:
+      - ./grafana-datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
+
+  alloy:
+    image: grafana/alloy:v1.12.2
+    ports: [&quot;8080:8080&quot;]
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy
+    command: [&quot;run&quot;, &quot;/etc/alloy/config.alloy&quot;, &quot;--storage.path=/tmp/alloy-data&quot;, &quot;--disable-reporting&quot;]
+
+  logstash:
+    image: public.ecr.aws/k9v9d5v2/admin-tools/crd-collectors/logstash:v1.0.1
+    network_mode: &quot;service:alloy&quot;   # shares alloy's network - mirrors the real pod
+    volumes:
+      - ./pipeline.conf:/configs/pipeline.conf
+    command: [&quot;-f&quot;, &quot;/configs/pipeline.conf&quot;]
+    depends_on: [alloy]
+</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span class="chip chip--new">New, local-test only</span><span class="code-path">grafana-datasource.yaml</span></div>
+        <pre><code>apiVersion: 1
+datasources:
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    isDefault: true
+</code></pre>
+      </div>
+      <p>The two ExternalSecret-templated files, rendered with static test values in place of the <code class="inline">{{ .username }}</code>/Vault lookups (there's no Vault locally, so this is the same substitution ExternalSecret would have done, done by hand):</p>
+      <div class="code-block">
+        <div class="code-head"><span class="chip chip--new">New, local-test only</span><span class="code-path">pipeline.conf</span></div>
+        <pre><code>input {
+  http {
+    port => 9090
+    type => &quot;awsconfig&quot;
+    codec => json_lines
+    user => &quot;testuser&quot;
+    password => &quot;testpass&quot;
+  }
+  http {
+    port => 9091
+    type => &quot;readiness&quot;
+  }
+}
+
+filter {
+  if [type] == &quot;readiness&quot; { drop {} }
+  json { source =&gt; &quot;message&quot; }
+  if [type] == &quot;awsconfig&quot; {
+    mutate { remove_field =&gt; [ &quot;[@version]&quot;, &quot;[headers]&quot;, &quot;[host]&quot;, &quot;[http]&quot;, &quot;[url]&quot; ] }
+  }
+  mutate { remove_field =&gt; [ &quot;[event]&quot;, &quot;[message]&quot; ] }
+}
+
+output {
+  http {
+    url =&gt; &quot;http://localhost:8080/loki/api/v1/raw&quot;
+    http_method =&gt; &quot;post&quot;
+    format =&gt; &quot;json&quot;
+    content_type =&gt; &quot;application/json&quot;
+  }
+}
+</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span class="chip chip--new">New, local-test only</span><span class="code-path">config.alloy</span></div>
+        <pre><code>loki.source.api &quot;raw_logs&quot; {
+  http {
+    listen_address = &quot;0.0.0.0&quot;
+    listen_port    = 8080
+  }
+  labels = {
+    job = &quot;awsconfig&quot;,
+    cloud = &quot;aws&quot;,
+  }
+  forward_to = [loki.write.loki_out.receiver]
+}
+
+loki.write &quot;loki_out&quot; {
+  endpoint {
+    url = &quot;http://loki:3100/loki/api/v1/push&quot;   # local Loki, no auth needed
+  }
+}
+</code></pre>
+      </div>
+      <ol class="steps">
+        <li><span class="step-num">1</span><div><h4>Start the stack</h4><p><code class="inline">docker compose up -d</code></p></div></li>
+        <li><span class="step-num">2</span><div><h4>Send a sample batch, exactly like the Lambda would</h4><p>Basic Auth header for <code class="inline">testuser:testpass</code> is <code class="inline">dGVzdHVzZXI6dGVzdHBhc3M=</code></p></div></li>
+      </ol>
+      <div class="code-block term">
+        <div class="code-head"><span class="code-path">simulate the Lambda's POST</span></div>
+        <pre><code>curl -X POST http://localhost:9090/ \
+  -H &quot;Content-Type: application/x-ndjson&quot; \
+  -H &quot;Authorization: Basic dGVzdHVzZXI6dGVzdHBhc3M=&quot; \
+  --data-binary @- &lt;&lt;'EOF'
+{&quot;resourceType&quot;:&quot;AWS::S3::Bucket&quot;,&quot;resourceId&quot;:&quot;example-bucket&quot;,&quot;configurationItemStatus&quot;:&quot;OK&quot;,&quot;awsRegion&quot;:&quot;us-east-1&quot;}
+{&quot;resourceType&quot;:&quot;AWS::EC2::SecurityGroup&quot;,&quot;resourceId&quot;:&quot;sg-0123456789abcdef0&quot;,&quot;configurationItemStatus&quot;:&quot;OK&quot;,&quot;awsRegion&quot;:&quot;us-east-1&quot;}
+EOF</code></pre>
+      </div>
+      <ol class="steps" style="counter-reset: none;">
+        <li><span class="step-num">3</span><div><h4>Confirm it landed</h4><p><code class="inline">curl -G http://localhost:3100/loki/api/v1/query_range --data-urlencode 'query={job="awsconfig"}'</code> — or open Grafana at <code class="inline">localhost:3000</code> and query the same. Two log lines, resource fields intact, <code class="inline">@version</code>/<code class="inline">headers</code>/<code class="inline">host</code>/<code class="inline">http</code>/<code class="inline">url</code> stripped.</p></div></li>
+      </ol>
+
+      <h3>Level 2 — k3s: prove the actual Kubernetes manifests</h3>
+      <p>Once the pipeline logic is confirmed, the second level checks the real YAML from <a href="#source">Section 3</a> — rendered, applied to a throwaway local cluster, with no Vault or External Secrets Operator involved. Locally, the Secrets those files would normally get from Vault are just created directly.</p>
+      <div class="callout">
+        <span class="callout-label">Why k3s instead of kind</span>
+        <p>k3s runs as a real single-binary Kubernetes distribution (its own kubelet, its own containerd) rather than Kubernetes-in-a-Docker-container, so it behaves closer to the real cluster and is easy to reach from outside the machine — useful for <strong>Doc 1's real-AWS end-to-end test</strong>, which needs a Lambda running in actual AWS to reach this cluster over the network via a tunnel. k3s ships its own default ingress controller (Traefik), but that's irrelevant here: this level deliberately skips testing <code class="inline">httproute.yaml</code> (see below) and reaches the Service directly, the same way it would under any other local cluster.</p>
+      </div>
+      <div class="code-block term">
+        <div class="code-head"><span class="code-path">install k3s</span></div>
+        <pre><code>curl -sfL https://get.k3s.io | sh -
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+sudo chmod 644 /etc/rancher/k3s/k3s.yaml   # so kubectl can read it as your user
+kubectl get nodes                          # confirm the node is Ready
+
+kubectl create namespace tenant-canary-user
+
+# stand in for the two ExternalSecrets - same keys, hand-created
+kubectl create secret generic aws-logstash-aws-config \
+  --namespace tenant-canary-user --from-file=pipeline.conf=./pipeline.conf
+kubectl create secret generic aws-alloy-aws-config \
+  --namespace tenant-canary-user --from-file=config.alloy=./config.alloy
+
+# render the template's placeholders, same substitution add_*.sh would do
+sed -e 's/<intergation_id>/aws-config/g' -e 's/<tenant_id>/canary-user/g' \
+  templates/aws-config-collector-tpl/deployment.yaml | kubectl apply -f -
+sed -e 's/<intergation_id>/aws-config/g' -e 's/<tenant_id>/canary-user/g' \
+  templates/aws-config-collector-tpl/service.yaml | kubectl apply -f -
+
+kubectl get pods -n tenant-canary-user -w</code></pre>
+      </div>
+      <p>Skip <code class="inline">httproute.yaml</code> for this local check — it depends on the shared <code class="inline">htpasswd</code> Secret and the real <code class="inline">nginx.org/mergeable-ingress-type</code> annotations this repo's production ingress controller understands, which aren't worth reproducing locally. A <code class="inline">kubectl port-forward svc/aws-aws-config 9090:9090 -n tenant-canary-user</code> and the same <code class="inline">curl</code> from Level 1 (against <code class="inline">localhost:9090</code> instead of the Docker Compose one) confirms the Deployment itself — image pulls, both containers reach Ready, Logstash accepts the request — without needing the Ingress at all.</p>
+      <div class="code-block term">
+        <div class="code-head"><span class="code-path">tear down</span></div>
+        <pre><code>/usr/local/bin/k3s-uninstall.sh</code></pre>
+      </div>
+
+      <h3>Level 3 — the real thing: a real AWS Lambda posting into this k3s pod</h3>
+      <p>This is what makes Doc 1's "real AWS account" test actually end-to-end rather than two separately-verified halves. AWS Lambda runs inside AWS and cannot reach a laptop's <code class="inline">localhost</code> directly, so the k3s Service from Level 2 needs a public HTTPS URL for the real Lambda to hit. A tunnel is the simplest way to get one without touching any real AWS-hosted ingress:</p>
+      <div class="code-block term">
+        <div class="code-head"><span class="code-path">expose the k3s pod publicly, temporarily</span></div>
+        <pre><code>kubectl port-forward svc/aws-aws-config 9090:9090 -n tenant-canary-user &amp;
+
+# in a second terminal - ngrok is the simplest option (cloudflared works the same way)
+ngrok http 9090</code></pre>
+      </div>
+      <p>ngrok prints an HTTPS forwarding URL like <code class="inline">https://a1b2c3d4.ngrok-free.app</code>. That, plus the <code class="inline">testuser</code>/<code class="inline">testpass</code> credentials baked into the local <code class="inline">pipeline.conf</code> from Level 1, is exactly what Doc 1's <code class="inline">terraform.tfvars</code> needs for <code class="inline">target_url</code>/<code class="inline">username</code>/<code class="inline">password</code> — see Doc 1, Section 9, Level 2. Once the real Lambda in AWS posts a real AWS Config snapshot through that tunnel, it lands in the exact same local Loki this section already validated, provably having survived the exact same nginx-rewrite-equivalent path (Logstash's own auth check, the filter's field-stripping) the production Ingress would apply.</p>
+      <div class="callout">
+        <span class="callout-label">Tear the tunnel down when done</span>
+        <p><code class="inline">ngrok</code>'s free-tier URL is public and unauthenticated by ngrok itself — Logstash's own Basic Auth is the only thing protecting it. Stop the <code class="inline">ngrok</code> process (and the <code class="inline">kubectl port-forward</code>) as soon as the test run is finished.</p>
+      </div>
+    </section>
+
+    <section id="checklist">
+      <div class="section-head"><span class="section-num">07</span><h2>Implementation checklist</h2></div>
+      <p>The order to actually build this in, once approved:</p>
+      <ol class="steps">
+        <li><span class="step-num">1</span><div><h4>Create <code class="inline">templates/aws-config-collector-tpl/</code></h4><p>The six files in <a href="#source">Section 3</a></p></div></li>
+        <li><span class="step-num">2</span><div><h4>Run the Docker Compose test</h4><p>Confirm the pipeline logic end to end, per <a href="#localtest">Section 6, Level 1</a></p></div></li>
+        <li><span class="step-num">3</span><div><h4>Run the k3s test</h4><p>Confirm the actual manifests deploy and the pod reaches Ready, per <a href="#localtest">Section 6, Level 2</a></p></div></li>
+        <li><span class="step-num">3b</span><div><h4>Run the real-AWS test, tunneled in</h4><p>Coordinate with Doc 1 to send a real Lambda-forwarded AWS Config snapshot through the tunnel from a test AWS account, per <a href="#localtest">Section 6, Level 3</a> — this is the current testing-only validation step; no production tenant is touched</p></div></li>
+        <li><span class="step-num">4</span><div><h4>Add the Grafana dashboard file</h4><p>Per <a href="#frontend">Section 5</a>, and confirm it renders against the local Loki from step 2's test data</p></div></li>
+        <li><span class="step-num">5</span><div><h4>Open for review</h4><p>Both new files plus the modified <code class="inline">grafana-values.yaml</code> line</p></div></li>
+      </ol>
+    </section>
+
+    <section id="deferred">
+      <div class="section-head"><span class="section-num">—</span><h2>Deferred / intentionally out of scope</h2></div>
+      <ul>
+        <li><strong>An onboarding script</strong> (e.g. <code class="inline">scripts/add_awsconfig.sh</code>, mirroring <code class="inline">add_cloudtrail.sh</code>) to automate rendering this template for a real tenant. Straightforward to write once this template exists, but it's an operational tool, not part of the feature itself.</li>
+        <li><strong>Detection/alert rules</strong> against AWS Config data. <code class="inline">rules/common/aws.rules</code> is written for CloudTrail-style API-call events; AWS Config's inventory/state data needs its own rule set (e.g. "S3 bucket became public," "security group opened to 0.0.0.0/0"), which is a separate body of work.</li>
+        <li><strong>Deploying any of this against the real production cluster.</strong> Everything in this document was designed to be provable with Docker, k3s, and — for the real-AWS validation pass — a tunnel into that local k3s pod. No production tenant is touched.</li>
+      </ul>
+      <footer>
+        <span>ak-prod-siem — AWS Config SIEM feature support (Doc 2 of 2)</span>
+        <span>No production files modified while preparing this document</span>
+      </footer>
+    </section>
+  </main>
+</div>

@@ -1,0 +1,978 @@
+<title>AWS Config Forwarder</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#F3F4F7; --surface:#FFFFFF; --surface-2:#EAECF1;
+    --text:#191C24; --text-muted:#5B6273; --border:#DBDFE7;
+    --accent:#8C5F19; --accent-strong:#6E4A12; --accent-soft:#F1E3C8;
+    --flow:#2B6E68;
+    --status-new:#8C5F19; --status-modified:#2B6E68; --status-unchanged:#78808F; --status-manual:#A6392F;
+    --status-new-bg:#F1E3C8; --status-modified-bg:#DCEEEC; --status-unchanged-bg:#E9EBEF; --status-manual-bg:#F5DEDB;
+    --code-bg:#1B1E27; --code-text:#E7E8ED; --code-muted:#8891A3; --code-border:#30364A;
+    --shadow: 0 1px 2px rgba(20,22,30,0.04), 0 8px 24px -12px rgba(20,22,30,0.12);
+    --serif:'Newsreader','Iowan Old Style','Georgia',serif;
+    --sans:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+    --mono:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#12141A; --surface:#191C24; --surface-2:#20242F;
+      --text:#E9EAEF; --text-muted:#9BA2B4; --border:#2C3140;
+      --accent:#D4A752; --accent-strong:#E7C077; --accent-soft:#3A2E14; --flow:#57A79F;
+      --status-new:#D4A752; --status-modified:#57A79F; --status-unchanged:#8891A3; --status-manual:#E17D72;
+      --status-new-bg:#332A15; --status-modified-bg:#173230; --status-unchanged-bg:#242835; --status-manual-bg:#3A2220;
+      --code-bg:#0E0F14; --code-text:#E7E8ED; --code-muted:#7C8499; --code-border:#2A2E3C;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#12141A; --surface:#191C24; --surface-2:#20242F;
+    --text:#E9EAEF; --text-muted:#9BA2B4; --border:#2C3140;
+    --accent:#D4A752; --accent-strong:#E7C077; --accent-soft:#3A2E14; --flow:#57A79F;
+    --status-new:#D4A752; --status-modified:#57A79F; --status-unchanged:#8891A3; --status-manual:#E17D72;
+    --status-new-bg:#332A15; --status-modified-bg:#173230; --status-unchanged-bg:#242835; --status-manual-bg:#3A2220;
+    --code-bg:#0E0F14; --code-text:#E7E8ED; --code-muted:#7C8499; --code-border:#2A2E3C;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+  *{ box-sizing:border-box; }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; } }
+  html{ background:var(--bg); }
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:var(--sans); font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased; }
+  a{ color:var(--accent-strong); }
+  a:focus-visible, button:focus-visible, .nav-link:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:2px; }
+  h1,h2,h3,h4{ font-family:var(--serif); font-weight:600; color:var(--text); text-wrap:balance; margin:0; }
+  .page{ max-width:1280px; margin:0 auto; padding:0 24px 96px; display:grid; grid-template-columns:250px minmax(0,1fr); gap:48px; align-items:start; }
+  @media (max-width:920px){ .page{ grid-template-columns:1fr; } }
+  .sidebar{ position:sticky; top:24px; padding-top:40px; display:flex; flex-direction:column; gap:20px; max-height:calc(100vh - 48px); }
+  @media (max-width:920px){ .sidebar{ position:static; max-height:none; padding-top:24px; } }
+  .brand{ display:flex; align-items:baseline; gap:8px; font-family:var(--serif); font-size:1.05rem; font-weight:600; }
+  .brand-mark{ color:var(--accent); }
+  .status-pill{ display:inline-flex; align-items:center; gap:6px; align-self:flex-start; padding:5px 11px; border-radius:100px; background:var(--accent-soft); color:var(--accent-strong); font-family:var(--sans); font-size:0.72rem; font-weight:600; letter-spacing:0.03em; text-transform:uppercase; }
+  .status-pill::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--accent); }
+  .doc-switch{ display:flex; flex-direction:column; gap:4px; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--surface); font-size:0.78rem; }
+  .doc-switch a{ color:var(--text-muted); text-decoration:none; }
+  .doc-switch .current{ color:var(--text); font-weight:600; }
+  nav.toc{ display:flex; flex-direction:column; gap:2px; overflow-y:auto; padding-right:4px; border-top:1px solid var(--border); padding-top:14px; }
+  .nav-link{ display:flex; gap:10px; align-items:baseline; padding:6px 8px; border-radius:6px; color:var(--text-muted); text-decoration:none; font-size:0.86rem; line-height:1.35; transition:background 0.15s ease, color 0.15s ease; }
+  .nav-link:hover{ background:var(--surface-2); color:var(--text); }
+  .nav-num{ font-family:var(--mono); font-size:0.72rem; color:var(--text-muted); min-width:1.4em; }
+  .nav-link.appendix{ border-top:1px solid var(--border); margin-top:8px; padding-top:12px; }
+  main{ min-width:0; padding-top:40px; }
+  header.hero{ display:flex; flex-direction:column; gap:16px; padding-bottom:36px; border-bottom:1px solid var(--border); margin-bottom:40px; }
+  header.hero h1{ font-size:clamp(2.1rem, 4vw, 2.9rem); line-height:1.08; }
+  header.hero .dek{ font-family:var(--serif); font-style:italic; font-size:1.2rem; color:var(--text-muted); max-width:62ch; text-wrap:balance; }
+  .meta-row{ display:flex; flex-wrap:wrap; gap:8px 20px; font-size:0.82rem; color:var(--text-muted); font-family:var(--mono); }
+  .meta-row strong{ color:var(--text); font-weight:600; }
+  .stat-row{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-top:8px; }
+  .stat-tile{ background:var(--surface); padding:16px 18px; display:flex; flex-direction:column; gap:4px; }
+  .stat-value{ font-family:var(--serif); font-weight:600; font-size:1.5rem; font-variant-numeric:tabular-nums; }
+  .stat-label{ font-size:0.74rem; color:var(--text-muted); letter-spacing:0.02em; }
+  section{ margin-bottom:64px; scroll-margin-top:24px; }
+  .section-head{ display:flex; align-items:baseline; gap:14px; margin-bottom:18px; }
+  .section-num{ font-family:var(--mono); color:var(--accent); font-size:0.9rem; font-weight:600; }
+  section h2{ font-size:1.65rem; }
+  section h3{ font-size:1.18rem; margin-top:28px; margin-bottom:10px; }
+  p{ margin:0 0 16px; max-width:70ch; }
+  section > p:last-child{ margin-bottom:0; }
+  ul, ol{ margin:0 0 16px; padding-left:1.3em; max-width:68ch; }
+  li{ margin-bottom:7px; }
+  li:last-child{ margin-bottom:0; }
+  strong{ font-weight:600; }
+  code.inline{ font-family:var(--mono); font-size:0.87em; background:var(--surface-2); padding:0.12em 0.4em; border-radius:4px; border:1px solid var(--border); }
+  .callout{ border:1px solid var(--border); border-left:3px solid var(--accent); background:var(--surface); border-radius:8px; padding:16px 20px; margin:0 0 24px; max-width:70ch; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout-label{ font-family:var(--sans); font-weight:600; font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent-strong); display:block; margin-bottom:6px; }
+  figure{ margin:28px 0 32px; max-width:100%; }
+  .fig-frame{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px 8px; overflow-x:auto; box-shadow:var(--shadow); }
+  figure svg{ display:block; margin:0 auto; max-width:100%; height:auto; min-width:560px; }
+  figcaption{ margin-top:10px; font-size:0.86rem; color:var(--text-muted); max-width:70ch; }
+  figcaption .fig-tag{ font-family:var(--mono); font-weight:600; color:var(--text); margin-right:6px; }
+  .code-block{ margin:0 0 24px; border-radius:10px; overflow:hidden; border:1px solid var(--code-border); box-shadow:var(--shadow); }
+  .code-head{ display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--code-bg); border-bottom:1px solid var(--code-border); }
+  .code-path{ font-family:var(--mono); font-size:0.82rem; color:var(--code-text); overflow-x:auto; white-space:nowrap; }
+  .code-block pre{ margin:0; padding:16px 18px; background:var(--code-bg); overflow-x:auto; }
+  .code-block code{ font-family:var(--mono); font-size:0.83rem; line-height:1.6; color:var(--code-text); white-space:pre; }
+  .code-block.term .code-path{ color:var(--code-muted); }
+  .code-block.term code .ok{ color:#8FCB8A; }
+  .chip{ display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:100px; font-family:var(--sans); font-size:0.68rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; white-space:nowrap; }
+  .chip--new{ background:var(--status-new-bg); color:var(--status-new); }
+  .chip--modified{ background:var(--status-modified-bg); color:var(--status-modified); }
+  .chip--unchanged{ background:var(--status-unchanged-bg); color:var(--status-unchanged); }
+  .chip--manual{ background:var(--status-manual-bg); color:var(--status-manual); }
+  .table-wrap{ overflow-x:auto; border:1px solid var(--border); border-radius:10px; margin:0 0 24px; box-shadow:var(--shadow); }
+  table{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  th, td{ text-align:left; padding:10px 16px; font-size:0.87rem; border-bottom:1px solid var(--border); vertical-align:top; }
+  th{ font-family:var(--sans); font-weight:600; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted); background:var(--surface-2); }
+  tr:last-child td{ border-bottom:none; }
+  td.path{ font-family:var(--mono); font-size:0.82rem; }
+  .steps{ list-style:none; padding:0; margin:0 0 24px; display:flex; flex-direction:column; gap:0; max-width:70ch; }
+  .steps li{ display:grid; grid-template-columns:32px 1fr; gap:14px; padding:14px 0; border-bottom:1px solid var(--border); margin:0; }
+  .steps li:last-child{ border-bottom:none; }
+  .step-num{ font-family:var(--serif); font-weight:600; font-size:1.1rem; color:var(--accent); }
+  .steps h4{ font-size:1rem; margin-bottom:4px; font-family:var(--sans); font-weight:600; }
+  .steps p{ margin:0; color:var(--text-muted); font-size:0.92rem; }
+  footer{ border-top:1px solid var(--border); margin-top:24px; padding-top:20px; font-size:0.8rem; color:var(--text-muted); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+</style>
+
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark">🛰️</span> AWS Config Forwarder</div>
+    <span class="status-pill">Doc 1 of 2 · testing only, for now</span>
+    <div class="doc-switch">
+      <span class="current">① Onboarding — Terraform &amp; Lambda</span>
+      <span>② SIEM Feature Support <em>(companion doc)</em></span>
+    </div>
+    <nav class="toc" aria-label="Table of contents">
+      <a class="nav-link" href="#summary"><span class="nav-num">00</span>Summary</a>
+      <a class="nav-link" href="#architecture"><span class="nav-num">01</span>Architecture</a>
+      <a class="nav-link" href="#creates"><span class="nav-num">02</span>What this creates</a>
+      <a class="nav-link" href="#prereqs"><span class="nav-num">03</span>Prerequisites</a>
+      <a class="nav-link" href="#structure"><span class="nav-num">04</span>Directory structure</a>
+      <a class="nav-link" href="#variables"><span class="nav-num">05</span>Variables reference</a>
+      <a class="nav-link" href="#source"><span class="nav-num">06</span>Full source</a>
+      <a class="nav-link" href="#setup"><span class="nav-num">07</span>Step-by-step setup</a>
+      <a class="nav-link" href="#behavior"><span class="nav-num">08</span>Lambda behavior</a>
+      <a class="nav-link" href="#localtest"><span class="nav-num">09</span>Validating this, end to end</a>
+      <a class="nav-link" href="#outputs"><span class="nav-num">10</span>Outputs</a>
+      <a class="nav-link" href="#cleanup"><span class="nav-num">11</span>Cleanup</a>
+      <a class="nav-link" href="#troubleshooting"><span class="nav-num">12</span>Troubleshooting</a>
+      <a class="nav-link" href="#variant"><span class="nav-num">13</span>Full vs customer variant</a>
+      <a class="nav-link appendix" href="#notes">Notes</a>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="hero">
+      <h1>AWS Config Forwarder — Onboarding Kit</h1>
+      <p class="dek">A Terraform module and Lambda function that a customer (or AccuKnox, on the customer's behalf) deploys into their own AWS account to ship AWS Config data to the SIEM — built to match the exact shape of the existing CloudTrail and CloudWatch onboarding kits.</p>
+      <div class="meta-row">
+        <span><strong>Location once approved:</strong> Integration_Guides/aws/aws-config/customer/</span>
+        <span><strong>Pattern mirrored:</strong> Integration_Guides/aws/cloudtrail-single-account/customer/</span>
+        <span><strong>Status:</strong> not yet added to the repo</span>
+      </div>
+      <div class="stat-row">
+        <div class="stat-tile"><span class="stat-value">5</span><span class="stat-label">files, same shape as the CloudTrail kit</span></div>
+        <div class="stat-tile"><span class="stat-value">1</span><span class="stat-label">line of Lambda logic differs from CloudTrail's</span></div>
+        <div class="stat-tile"><span class="stat-value">2</span><span class="stat-label">validation levels — offline, then a real AWS account</span></div>
+      </div>
+    </header>
+
+    <section id="summary">
+      <div class="section-head"><span class="section-num">00</span><h2>Summary</h2></div>
+      <p>This is the piece a customer runs. It deploys entirely inside <em>their</em> AWS account: one small Lambda function that wakes up whenever AWS Config drops a new snapshot or history file into S3, and forwards it to a URL the SIEM team gives them. It does not know or care about AccuKnox's Kubernetes cluster, tenants, or Vault — it only needs a URL and a username/password, exactly like every other integration kit in <code class="inline">Integration_Guides/</code>.</p>
+      <p>It was built by taking the existing, working <code class="inline">cloudtrail-single-account/customer</code> kit and changing the minimum necessary to read AWS Config's file format instead of CloudTrail's — same Terraform shape, same Lambda shape, same README structure, so it's immediately familiar to anyone who has already deployed the CloudTrail kit.</p>
+      <div class="callout">
+        <span class="callout-label">The one real logic difference</span>
+        <p>CloudTrail's delivered files nest events under a <code class="inline">Records</code> key. AWS Config's snapshot and history files both nest their data under <code class="inline">configurationItems</code> instead. Everything else — chunking, retries, authentication, TLS handling — is identical.</p>
+      </div>
+      <div class="callout">
+        <span class="callout-label">Current status — testing only</span>
+        <p>This kit is not yet offered to real customers. Right now it exists to validate that the AWS Config → SIEM path actually works, end to end. That validation runs in an AccuKnox-controlled test/sandbox AWS account — never a customer's — and posts into a local test rig standing in for the SIEM (see <a href="#localtest">Section 9</a>), not any real production tenant. "Customer" in the rest of this document describes what the kit is <em>shaped</em> for; today, AccuKnox itself is the one running it.</p>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <div class="section-head"><span class="section-num">01</span><h2>Architecture</h2></div>
+      <p>AWS Config has no CloudWatch Logs delivery option — S3 is the only place it writes to. So this kit reacts to file arrival rather than streaming or polling.</p>
+      <figure>
+        <div class="fig-frame">
+          <svg viewBox="0 0 940 230" role="img" aria-label="Inside the customer's AWS account: AWS Config writes snapshot and history files to an S3 bucket, which triggers a new Lambda function on file arrival. The Lambda sends an HTTPS POST with basic authentication to the AccuKnox SIEM ingest endpoint, which is outside the AWS account and covered by a separate document.">
+            <defs>
+              <marker id="c1arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+              </marker>
+              <marker id="c1arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/>
+              </marker>
+            </defs>
+            <rect x="10" y="30" width="590" height="150" rx="10" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-dasharray="4 4"/>
+            <text x="26" y="52" font-family="IBM Plex Sans" font-size="11.5" font-weight="700" letter-spacing="0.06em" fill="currentColor" opacity="0.6">YOUR AWS ACCOUNT</text>
+
+            <rect x="40" y="80" width="150" height="64" rx="8" fill="none" stroke="currentColor" stroke-opacity="0.6"/>
+            <text x="115" y="107" text-anchor="middle" font-family="IBM Plex Sans" font-size="13" font-weight="600" fill="currentColor">AWS Config</text>
+            <text x="115" y="123" text-anchor="middle" font-family="IBM Plex Sans" font-size="9.5" fill="currentColor" opacity="0.6">existing, or enabled</text>
+            <text x="115" y="135" text-anchor="middle" font-family="IBM Plex Sans" font-size="9.5" fill="currentColor" opacity="0.6">by the &quot;full&quot; variant</text>
+
+            <rect x="240" y="80" width="150" height="64" rx="8" fill="none" stroke="currentColor" stroke-opacity="0.6"/>
+            <text x="315" y="107" text-anchor="middle" font-family="IBM Plex Sans" font-size="13" font-weight="600" fill="currentColor">S3 bucket</text>
+            <text x="315" y="123" text-anchor="middle" font-family="IBM Plex Sans" font-size="9.5" fill="currentColor" opacity="0.6">existing, or created</text>
+            <text x="315" y="135" text-anchor="middle" font-family="IBM Plex Sans" font-size="9.5" fill="currentColor" opacity="0.6">by the &quot;full&quot; variant</text>
+
+            <rect x="440" y="80" width="150" height="64" rx="8" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.75"/>
+            <text x="515" y="105" text-anchor="middle" font-family="IBM Plex Sans" font-size="13" font-weight="700" fill="var(--accent-strong)">Lambda</text>
+            <text x="515" y="121" text-anchor="middle" font-family="IBM Plex Sans" font-size="9.5" font-weight="700" letter-spacing="0.03em" fill="var(--accent-strong)">THIS KIT</text>
+            <text x="515" y="134" text-anchor="middle" font-family="IBM Plex Sans" font-size="9.5" fill="var(--accent-strong)" opacity="0.85">reads S3, posts NDJSON</text>
+
+            <line x1="190" y1="112" x2="236" y2="112" stroke="currentColor" stroke-opacity="0.6" stroke-width="1.5" marker-end="url(#c1arrow)"/>
+            <text x="213" y="100" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="currentColor" opacity="0.7">delivers</text>
+            <line x1="390" y1="112" x2="436" y2="112" stroke="currentColor" stroke-opacity="0.6" stroke-width="1.5" marker-end="url(#c1arrow)"/>
+            <text x="413" y="100" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="currentColor" opacity="0.7">S3 event</text>
+
+            <line x1="590" y1="112" x2="726" y2="112" stroke="var(--accent)" stroke-width="2.25" marker-end="url(#c1arrow-accent)"/>
+            <text x="658" y="90" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" font-weight="600" fill="var(--accent-strong)">HTTPS POST · Basic Auth</text>
+
+            <rect x="730" y="80" width="190" height="64" rx="8" fill="none" stroke="currentColor" stroke-opacity="0.5" stroke-dasharray="3 3"/>
+            <text x="825" y="105" text-anchor="middle" font-family="IBM Plex Sans" font-size="13" font-weight="600" fill="currentColor">AccuKnox SIEM</text>
+            <text x="825" y="121" text-anchor="middle" font-family="IBM Plex Sans" font-size="9.5" fill="currentColor" opacity="0.6">ingest endpoint</text>
+            <text x="825" y="133" text-anchor="middle" font-family="IBM Plex Sans" font-size="9.5" fill="currentColor" opacity="0.6">— see Doc 2 —</text>
+          </svg>
+        </div>
+        <figcaption><span class="fig-tag">Fig. 1</span>Everything inside the dashed box is this kit's territory. What happens after the HTTPS POST is a different system, covered by the companion SIEM feature-support document.</figcaption>
+      </figure>
+      <p>Just like the CloudTrail kit, this one is <code class="inline">target_url</code>-agnostic: it treats the SIEM ingest endpoint as an opaque HTTPS URL with Basic Auth, supplied to it, not derived by it.</p>
+    </section>
+
+    <section id="creates">
+      <div class="section-head"><span class="section-num">02</span><h2>What this module creates</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Resource</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>Lambda function</td><td>Python function that reads, decompresses, chunks, and forwards AWS Config files</td></tr>
+            <tr><td>Lambda IAM role</td><td>Execution role with S3 read + CloudWatch Logs permissions</td></tr>
+            <tr><td>Lambda IAM policies</td><td><code class="inline">s3:GetObject</code> on the bucket (scoped to the Config key prefix), plus CloudWatch Logs write access</td></tr>
+            <tr><td>S3 bucket notification</td><td>Triggers the Lambda on every matching <code class="inline">s3:ObjectCreated:*</code> event</td></tr>
+            <tr><td>Lambda permission</td><td>Allows S3 to invoke the Lambda function</td></tr>
+            <tr><td>CloudWatch log group</td><td>Stores Lambda execution logs (3-day retention)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="prereqs">
+      <div class="section-head"><span class="section-num">03</span><h2>Prerequisites</h2></div>
+      <h3>1. Existing resources (customer-owned)</h3>
+      <p>This module assumes you <strong>already have</strong>:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Resource</th><th>Details</th></tr></thead>
+          <tbody>
+            <tr><td>S3 bucket</td><td>Receiving AWS Config snapshot/history files (gzip-compressed JSON)</td></tr>
+            <tr><td>AWS Config recorder + delivery channel</td><td>Enabled and delivering to the above bucket</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout">
+        <span class="callout-label">Don't have those yet?</span>
+        <p>This module does <strong>not</strong> enable AWS Config or create the bucket. If you need those too, use the <a href="#variant">full variant</a> instead.</p>
+      </div>
+      <h3>2. AWS credentials</h3>
+      <div class="code-block">
+        <div class="code-head"><span class="code-path">shell</span></div>
+        <pre><code># Option 1: Named profile
+export AWS_PROFILE=your-profile
+
+# Option 2: Environment variables
+export AWS_ACCESS_KEY_ID=your-access-key
+export AWS_SECRET_ACCESS_KEY=your-secret-key
+export AWS_DEFAULT_REGION=us-west-1</code></pre>
+      </div>
+      <h3>3. Tools required</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tool</th><th>Minimum version</th></tr></thead>
+          <tbody>
+            <tr><td>Terraform</td><td>&gt;= 1.0</td></tr>
+            <tr><td>AWS CLI</td><td>latest</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>4. AWS permissions to run Terraform</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Permission</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">lambda:CreateFunction</code>, <code class="inline">UpdateFunctionCode</code>, <code class="inline">UpdateFunctionConfiguration</code>, <code class="inline">DeleteFunction</code></td><td>Manage the Lambda function</td></tr>
+            <tr><td><code class="inline">lambda:AddPermission</code>, <code class="inline">RemovePermission</code></td><td>Allow S3 to invoke Lambda</td></tr>
+            <tr><td><code class="inline">iam:CreateRole</code>, <code class="inline">DeleteRole</code>, <code class="inline">AttachRolePolicy</code>, <code class="inline">DetachRolePolicy</code>, <code class="inline">PutRolePolicy</code></td><td>Create and manage the Lambda execution role</td></tr>
+            <tr><td><code class="inline">s3:PutBucketNotification</code>, <code class="inline">GetBucketNotification</code></td><td>Configure S3 event notifications</td></tr>
+            <tr><td><code class="inline">logs:CreateLogGroup</code>, <code class="inline">PutRetentionPolicy</code></td><td>Manage the CloudWatch log group</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="structure">
+      <div class="section-head"><span class="section-num">04</span><h2>Directory structure</h2></div>
+      <div class="code-block">
+        <div class="code-head"><span class="code-path">Integration_Guides/aws/aws-config/customer/</span></div>
+        <pre><code>Integration_Guides/aws/aws-config/customer/
+├── main.tf                    # Lambda, IAM, S3 notification resources
+├── provider.tf                # AWS provider config (us-west-1)
+├── variables.tf                # Input variable definitions
+├── lambda.py                   # Lambda function source code
+├── terraform.tfvars.example    # Copy to terraform.tfvars and fill in
+└── README.md                   # This guide, as the module's own README</code></pre>
+      </div>
+    </section>
+
+    <section id="variables">
+      <div class="section-head"><span class="section-num">05</span><h2>Variables reference</h2></div>
+      <h3>Required</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Variable</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td class="path">username</td><td>string (sensitive)</td><td>Basic auth username for the AccuKnox SIEM ingest endpoint</td></tr>
+            <tr><td class="path">password</td><td>string (sensitive)</td><td>Basic auth password for the AccuKnox SIEM ingest endpoint</td></tr>
+            <tr><td class="path">target_url</td><td>string</td><td>HTTPS endpoint URL to forward AWS Config files to</td></tr>
+            <tr><td class="path">bucket_name</td><td>string</td><td>Name of the <strong>existing</strong> S3 bucket AWS Config delivers to</td></tr>
+            <tr><td class="path">bucket_arn</td><td>string</td><td>ARN of that same existing bucket</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>Optional</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Variable</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td class="path">accuknox_suffix</td><td>string</td><td><code class="inline">"accuknox-awsconfig-collector"</code></td><td>Prefix for resource naming (Lambda, IAM role, policies)</td></tr>
+            <tr><td class="path">config_key_prefix</td><td>string</td><td><code class="inline">""</code></td><td><strong>New, not present in the CloudTrail kit.</strong> Scopes the S3 trigger to a key prefix, e.g. <code class="inline">AWSLogs/111122223333/Config/</code>. Needed whenever the bucket also receives CloudTrail or other logs, so this Lambda only fires on Config files</td></tr>
+            <tr><td class="path">chunk_size</td><td>string</td><td><code class="inline">""</code> (3 MB in Lambda)</td><td>Max payload size in bytes per chunk. Leave empty for default</td></tr>
+            <tr><td class="path">line_limit</td><td>string</td><td><code class="inline">""</code> (1000 in Lambda)</td><td>Max number of configuration items per chunk. Leave empty for default</td></tr>
+            <tr><td class="path">insecure_tls</td><td>string</td><td><code class="inline">""</code> (false in Lambda)</td><td>Skip TLS verification: <code class="inline">"true"</code> or <code class="inline">"false"</code></td></tr>
+            <tr><td class="path">lambda_memory_mb</td><td>number</td><td><code class="inline">512</code></td><td><strong>New, sized up from CloudTrail's unset default (128 MB).</strong> A full-account AWS Config snapshot is much larger than one CloudTrail delta and is decompressed entirely in memory</td></tr>
+            <tr><td class="path">lambda_timeout_seconds</td><td>number</td><td><code class="inline">120</code></td><td><strong>New, sized up from CloudTrail's unset default (3s).</strong> Gives large snapshots room to download, decompress, and post in multiple chunks</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout">
+        <span class="callout-label">Why two new variables were added</span>
+        <p>The CloudTrail kit's <code class="inline">aws_lambda_function</code> block sets neither <code class="inline">memory_size</code> nor <code class="inline">timeout</code>, so it silently runs at AWS's defaults — 128&nbsp;MB and 3&nbsp;seconds. That's tight even for CloudTrail; it's not enough for a full AWS Config account snapshot. Rather than copy that gap forward, this kit makes both explicit and configurable.</p>
+      </div>
+    </section>
+
+    <section id="source">
+      <div class="section-head"><span class="section-num">06</span><h2>Full source</h2></div>
+      <p>Every file below is complete and ready to place at <code class="inline">Integration_Guides/aws/aws-config/customer/</code>. Differences from the CloudTrail kit are called out inline.</p>
+
+      <div class="code-block">
+        <div class="code-head"><span class="chip chip--new">New file</span><span class="code-path">provider.tf</span></div>
+        <pre><code>provider &quot;aws&quot; {
+  region = &quot;us-west-1&quot;
+  default_tags {
+    tags = {
+      &quot;Owner&quot; : &quot;Accuknox CDR collector&quot;
+    }
+  }
+}
+</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span class="chip chip--new">New file</span><span class="code-path">variables.tf</span></div>
+        <pre><code>variable &quot;accuknox_suffix&quot; {
+  type    = string
+  default = &quot;accuknox-awsconfig-collector&quot;
+}
+
+variable &quot;username&quot; {
+  type      = string
+  sensitive = true
+}
+
+variable &quot;password&quot; {
+  type      = string
+  sensitive = true
+}
+
+variable &quot;bucket_arn&quot; {
+  type = string
+}
+
+variable &quot;bucket_name&quot; {
+  type = string
+}
+
+variable &quot;target_url&quot; {
+  type = string
+}
+
+# Scopes the S3 trigger to AWS Config's own files, e.g.
+# &quot;AWSLogs/111122223333/Config/&quot; - important when the bucket is
+# shared with CloudTrail or other log deliveries, so this Lambda
+# only fires on AWS Config's ConfigSnapshot / ConfigHistory objects.
+variable &quot;config_key_prefix&quot; {
+  type    = string
+  default = &quot;&quot;
+}
+
+variable &quot;chunk_size&quot; {
+  type = string
+  # defaults to 3MB in lambda code
+  default = &quot;&quot;
+}
+
+variable &quot;line_limit&quot; {
+  type = string
+  # defaults to 1000 lines in lambda code
+  default = &quot;&quot;
+}
+
+variable &quot;insecure_tls&quot; {
+  type = string
+  # defaults to false in lambda code
+  # can either be false or true // as strings
+  default = &quot;&quot;
+}
+
+# AWS Config snapshot files (full account inventory) can be far
+# larger than a single CloudTrail delta and are decompressed
+# entirely in memory, so both of these are explicit here rather
+# than left at AWS's defaults (128MB / 3s).
+variable &quot;lambda_memory_mb&quot; {
+  type    = number
+  default = 512
+}
+
+variable &quot;lambda_timeout_seconds&quot; {
+  type    = number
+  default = 120
+}
+</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span class="chip chip--new">New file</span><span class="code-path">main.tf</span></div>
+        <pre><code># Generate a unique 5-character lowercase alphanumeric suffix
+resource &quot;random_string&quot; &quot;suffix&quot; {
+  length  = 5
+  special = false
+  upper   = false
+}
+
+
+# 4. Lambda Function
+data &quot;archive_file&quot; &quot;lambda_zip&quot; {
+  type        = &quot;zip&quot;
+  source_file = &quot;lambda.py&quot;
+  output_path = &quot;lambda_payload.zip&quot;
+}
+
+resource &quot;aws_lambda_function&quot; &quot;config_forwarder&quot; {
+  filename      = data.archive_file.lambda_zip.output_path
+  function_name = &quot;${var.accuknox_suffix}-log-forwarder-${random_string.suffix.result}&quot;
+  role          = aws_iam_role.lambda_exec.arn
+  handler       = &quot;lambda.handler&quot;
+  runtime       = &quot;python3.9&quot;
+
+  memory_size = var.lambda_memory_mb
+  timeout     = var.lambda_timeout_seconds
+
+  environment {
+    variables = {
+      TARGET_URL        = var.target_url
+      BASIC_USER        = var.username
+      BASIC_PASS        = var.password
+      INSECURE_TLS_SKIP = var.insecure_tls
+      CHUNK_SIZE_LIMIT  = var.chunk_size
+      LINE_LIMIT        = var.line_limit
+    }
+  }
+  depends_on = [
+    aws_iam_role.lambda_exec,
+  ]
+}
+
+# 5. S3 Trigger &amp; Permissions
+resource &quot;aws_lambda_permission&quot; &quot;s3_trigger_permission&quot; {
+  statement_id  = &quot;AllowS3Invoke&quot;
+  action        = &quot;lambda:InvokeFunction&quot;
+  function_name = aws_lambda_function.config_forwarder.function_name
+  principal     = &quot;s3.amazonaws.com&quot;
+  source_arn    = var.bucket_arn
+}
+
+resource &quot;aws_s3_bucket_notification&quot; &quot;bucket_notif&quot; {
+  bucket = var.bucket_name
+
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.config_forwarder.arn
+    events              = [&quot;s3:ObjectCreated:*&quot;]
+    filter_prefix       = var.config_key_prefix
+  }
+
+  depends_on = [
+    aws_lambda_permission.s3_trigger_permission,
+    aws_lambda_function.config_forwarder
+  ]
+}
+
+resource &quot;aws_iam_role&quot; &quot;lambda_exec&quot; {
+  name = &quot;${var.accuknox_suffix}-lambda-exec-role-${random_string.suffix.result}&quot;
+
+  assume_role_policy = jsonencode({
+    Version = &quot;2012-10-17&quot;
+    Statement = [{
+      Action    = &quot;sts:AssumeRole&quot;
+      Effect    = &quot;Allow&quot;
+      Principal = { Service = &quot;lambda.amazonaws.com&quot; }
+    }]
+  })
+}
+
+resource &quot;aws_iam_role_policy&quot; &quot;lambda_s3_access&quot; {
+  name = &quot;${var.accuknox_suffix}-s3-read-policy-${random_string.suffix.result}&quot;
+  role = aws_iam_role.lambda_exec.id
+
+  policy = jsonencode({
+    Version = &quot;2012-10-17&quot;
+    Statement = [{
+      Effect   = &quot;Allow&quot;
+      Action   = [&quot;s3:GetObject&quot;]
+      Resource = &quot;${var.bucket_arn}/*&quot;
+    }]
+  })
+}
+
+
+resource &quot;aws_iam_role_policy&quot; &quot;lambda_logging&quot; {
+  name = &quot;${var.accuknox_suffix}-lambda-logging-policy-${random_string.suffix.result}&quot;
+  role = aws_iam_role.lambda_exec.id
+
+  policy = jsonencode({
+    Version = &quot;2012-10-17&quot;
+    Statement = [
+      {
+        Effect = &quot;Allow&quot;
+        Action = [
+          &quot;logs:CreateLogGroup&quot;,
+          &quot;logs:CreateLogStream&quot;,
+          &quot;logs:PutLogEvents&quot;
+        ]
+        Resource = &quot;arn:aws:logs:*:*:*&quot;
+      }
+    ]
+  })
+}
+
+# Explicitly defining the Log Group in Terraform allows for better cleanup
+resource &quot;aws_cloudwatch_log_group&quot; &quot;lambda_log_group&quot; {
+  name              = &quot;/aws/lambda/${aws_lambda_function.config_forwarder.function_name}&quot;
+  retention_in_days = 3 # Keeps your CloudWatch costs down
+}
+
+output &quot;lambda_function_name&quot; {
+  value = aws_lambda_function.config_forwarder.function_name
+}
+
+output &quot;lambda_role_arn&quot; {
+  value = aws_iam_role.lambda_exec.arn
+}
+</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span class="chip chip--modified">1 line different from CloudTrail's</span><span class="code-path">lambda.py</span></div>
+        <pre><code>import boto3
+import gzip
+import json
+import io
+import urllib.request
+import logging
+import os
+import base64
+import ssl
+
+# Initialize logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+s3 = boto3.client(&#39;s3&#39;)
+
+def get_env_config():
+    return {
+        &quot;target_url&quot;: os.environ.get(&quot;TARGET_URL&quot;),
+        &quot;chunk_size&quot;: int(os.environ.get(&quot;CHUNK_SIZE_LIMIT&quot;, 3 * 1024 * 1024)),
+        &quot;line_limit&quot;: int(os.environ.get(&quot;LINE_LIMIT&quot;, 1000)),
+        &quot;user&quot;: os.environ.get(&quot;BASIC_USER&quot;),
+        &quot;password&quot;: os.environ.get(&quot;BASIC_PASS&quot;),
+        &quot;insecure_tls&quot;: os.environ.get(&quot;INSECURE_TLS_SKIP&quot;, &quot;false&quot;).lower() == &quot;true&quot;
+    }
+
+def handler(event, context):
+    config = get_env_config()
+    if not config[&quot;target_url&quot;]:
+        logger.error(&quot;TARGET_URL environment variable is missing.&quot;)
+        return {&quot;statusCode&quot;: 500}
+
+    # Setup SSL Context for insecure skip
+    ssl_context = None
+    if config[&quot;insecure_tls&quot;]:
+        logger.warning(&quot;SSL verification is disabled (INSECURE_TLS_SKIP=true)&quot;)
+        ssl_context = ssl._create_unverified_context()
+
+    for record in event.get(&#39;Records&#39;, []):
+        bucket = record.get(&#39;s3&#39;, {}).get(&#39;bucket&#39;, {}).get(&#39;name&#39;)
+        key = record.get(&#39;s3&#39;, {}).get(&#39;object&#39;, {}).get(&#39;key&#39;)
+
+        if not bucket or not key:
+            continue
+
+        try:
+            # 1. Download and decompress entirely into memory
+            response = s3.get_object(Bucket=bucket, Key=key)
+            with gzip.GzipFile(fileobj=response[&#39;Body&#39;]) as gf:
+                content = gf.read()  # This loads the whole decompressed file into RAM
+
+            # 2. Parse the JSON
+            data = json.loads(content.decode(&#39;utf-8&#39;))
+
+            # 3. Process the &#39;configurationItems&#39; list.
+            #    AWS Config snapshot AND history files both use this key
+            #    (this is the only line that differs from the CloudTrail
+            #    variant of this Lambda, which reads data[&#39;Records&#39;]).
+            items = data.get(&#39;configurationItems&#39;, [])
+            logger.info(f&quot;Loaded {len(items)} configurationItems from {key}&quot;)
+
+            current_chunk = []
+            current_size = 0
+
+            for item in items:
+                # Convert back to JSON string for chunking
+                item_str = json.dumps(item) + &quot;\n&quot;
+                item_bytes = item_str.encode(&#39;utf-8&#39;)
+                item_size = len(item_bytes)
+
+                # Check if we need to send the current batch
+                if (current_size + item_size &gt; config[&quot;chunk_size&quot;]) or (len(current_chunk) &gt;= config[&quot;line_limit&quot;]):
+                    if current_chunk:
+                        send_data(&quot;&quot;.join(current_chunk), config, ssl_context)
+                        current_chunk, current_size = [], 0
+
+                current_chunk.append(item_str)
+                current_size += item_size
+
+            # Flush final batch
+            if current_chunk:
+                send_data(&quot;&quot;.join(current_chunk), config, ssl_context)
+
+        except Exception as e:
+            logger.error(f&quot;Error processing {key}: {str(e)}&quot;)
+            continue
+
+    return {&quot;statusCode&quot;: 200}
+
+def send_data(payload, config, ssl_context):
+    data_bytes = payload.encode(&#39;utf-8&#39;)
+    headers = {&#39;Content-Type&#39;: &#39;application/x-ndjson&#39;}
+
+    if config[&quot;user&quot;] and config[&quot;password&quot;]:
+        auth_str = f&quot;{config[&#39;user&#39;]}:{config[&#39;password&#39;]}&quot;
+        encoded_auth = base64.b64encode(auth_str.encode(&#39;ascii&#39;)).decode(&#39;ascii&#39;)
+        headers[&#39;Authorization&#39;] = f&quot;Basic {encoded_auth}&quot;
+
+    req = urllib.request.Request(config[&quot;target_url&quot;], data=data_bytes, headers=headers, method=&#39;POST&#39;)
+
+    try:
+        with urllib.request.urlopen(req, timeout=15, context=ssl_context) as response:
+            logger.info(f&quot;Successfully posted {len(data_bytes)} bytes. Status: {response.getcode()}&quot;)
+    except Exception as e:
+        logger.error(f&quot;HTTP Post failed: {str(e)}&quot;)
+        raise e
+</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-head"><span class="chip chip--new">New file</span><span class="code-path">terraform.tfvars.example</span></div>
+        <pre><code># ===========================================
+# Required Variables — MUST be filled in
+# ===========================================
+
+# AccuKnox SIEM endpoint credentials
+username = &quot;your-accuknox-username&quot;
+password = &quot;your-accuknox-password&quot;
+
+# Target HTTPS endpoint to forward AWS Config files to
+target_url = &quot;https://your-accuknox-siem-endpoint.com/ingest&quot;
+
+# Existing S3 bucket that receives AWS Config snapshot/history files
+bucket_name = &quot;your-aws-config-s3-bucket&quot;
+bucket_arn  = &quot;arn:aws:s3:::your-aws-config-s3-bucket&quot;
+
+# Scope the trigger to AWS Config&#39;s own files. Required if this bucket
+# is also used by CloudTrail or anything else - otherwise leave as &quot;&quot;
+config_key_prefix = &quot;AWSLogs/123456789012/Config/&quot;
+
+
+# ===========================================
+# Optional Variables — defaults are fine
+# ===========================================
+
+# Unique suffix for resource naming
+accuknox_suffix = &quot;accuknox-awsconfig-collector&quot;
+
+# Lambda chunking config (empty string = use Lambda code defaults)
+chunk_size   = &quot;&quot;   # defaults to 3 MB in lambda code
+line_limit   = &quot;&quot;   # defaults to 1000 lines in lambda code
+insecure_tls = &quot;&quot;   # defaults to false in lambda code (&quot;true&quot; or &quot;false&quot;)
+
+# Sized up from CloudTrail&#39;s Lambda defaults - AWS Config snapshots
+# can be a full account inventory, much larger than a CloudTrail delta
+lambda_memory_mb       = 512
+lambda_timeout_seconds = 120
+</code></pre>
+      </div>
+    </section>
+
+    <section id="setup">
+      <div class="section-head"><span class="section-num">07</span><h2>Step-by-step setup</h2></div>
+      <ol class="steps">
+        <li><span class="step-num">1</span><div><h4>Clone &amp; navigate</h4><p><code class="inline">git clone &lt;repo-url&gt; &amp;&amp; cd Integration_Guides/aws/aws-config/customer/</code></p></div></li>
+        <li><span class="step-num">2</span><div><h4>Authenticate with AWS</h4><p>Named profile or access-key env vars, then verify with <code class="inline">aws sts get-caller-identity</code></p></div></li>
+        <li><span class="step-num">3</span><div><h4>Configure variables</h4><p>Copy <code class="inline">terraform.tfvars.example</code> to <code class="inline">terraform.tfvars</code> and fill in the required values shown in <a href="#variables">Section 5</a></p></div></li>
+        <li><span class="step-num">4</span><div><h4>Initialize Terraform</h4><p><code class="inline">terraform init</code> — downloads the <code class="inline">aws</code> and <code class="inline">random</code> providers</p></div></li>
+        <li><span class="step-num">5</span><div><h4>Plan</h4><p><code class="inline">terraform plan -var-file="terraform.tfvars"</code> — confirm you see the Lambda, IAM role/policies, S3 notification, and log group being created</p></div></li>
+        <li><span class="step-num">6</span><div><h4>Apply</h4><p><code class="inline">terraform apply -var-file="terraform.tfvars"</code>, type <code class="inline">yes</code>. Takes 1–3 minutes</p></div></li>
+        <li><span class="step-num">7</span><div><h4>Verify</h4><p><code class="inline">terraform output</code>, then tail the Lambda's logs (command below) and confirm you see lines like <code class="inline">Loaded 42 configurationItems from AWSLogs/.../ConfigSnapshot/...</code> and <code class="inline">Successfully posted ... Status: 200</code></p></div></li>
+      </ol>
+      <div class="code-block term">
+        <div class="code-head"><span class="code-path">verify</span></div>
+        <pre><code>aws logs tail &quot;/aws/lambda/accuknox-awsconfig-collector-log-forwarder-&lt;suffix&gt;&quot; --follow</code></pre>
+      </div>
+    </section>
+
+    <section id="behavior">
+      <div class="section-head"><span class="section-num">08</span><h2>Lambda function behavior</h2></div>
+      <ol>
+        <li><strong>Receives S3 event</strong> — triggered by new objects under the Config key prefix</li>
+        <li><strong>Downloads &amp; decompresses</strong> — reads the gzip-compressed AWS Config JSON file</li>
+        <li><strong>Parses items</strong> — extracts the <code class="inline">configurationItems</code> array (present in both snapshot and history files)</li>
+        <li><strong>Chunks the data</strong> — splits items into batches bounded by <code class="inline">CHUNK_SIZE_LIMIT</code> (default 3 MB) or <code class="inline">LINE_LIMIT</code> (default 1000 items), whichever comes first</li>
+        <li><strong>Forwards via HTTPS</strong> — POSTs each chunk to <code class="inline">TARGET_URL</code> as <code class="inline">application/x-ndjson</code>, with a Basic Auth header if credentials are set</li>
+        <li><strong>Logs results</strong> — success/failure logged to CloudWatch</li>
+      </ol>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Env var</th><th>Source</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td class="path">TARGET_URL</td><td>target_url</td><td>HTTPS endpoint for log forwarding</td></tr>
+            <tr><td class="path">BASIC_USER</td><td>username</td><td>Basic auth username</td></tr>
+            <tr><td class="path">BASIC_PASS</td><td>password</td><td>Basic auth password</td></tr>
+            <tr><td class="path">INSECURE_TLS_SKIP</td><td>insecure_tls</td><td>Skip TLS verification ("true" / "false")</td></tr>
+            <tr><td class="path">CHUNK_SIZE_LIMIT</td><td>chunk_size</td><td>Only set when non-empty; otherwise the Lambda's 3&nbsp;MB default applies</td></tr>
+            <tr><td class="path">LINE_LIMIT</td><td>line_limit</td><td>Only set when non-empty; otherwise the Lambda's 1000-item default applies</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="localtest">
+      <div class="section-head"><span class="section-num">09</span><h2>Validating this, end to end</h2></div>
+      <p>Two levels. The first proves the Lambda's own logic in isolation, with nothing real involved. The second is the actual validation this kit is currently for — a real Lambda, in a real AWS account, triggered by a real S3 event, posting into a real (if temporary) SIEM-side collector pod. Nothing in either level touches a production tenant.</p>
+
+      <h3>Level 1 — offline: prove the Lambda's own logic</h3>
+      <p>The Lambda's logic (S3 read → decompress → parse → chunk → POST) can be proven correct without any AWS account at all, by faking the one AWS call it makes (<code class="inline">s3.get_object</code>) and pointing <code class="inline">TARGET_URL</code> at a throwaway local web server. This was actually run to confirm the <code class="inline">configurationItems</code> change above is correct:</p>
+      <div class="code-block term">
+        <div class="code-head"><span class="chip chip--modified">Test output</span><span class="code-path">local, offline run</span></div>
+        <pre><code><span class="ok">OK: handler() parsed configurationItems, batched, and POSTed correctly.</span>
+<span class="ok">OK: 2 NDJSON lines received, Authorization header present.</span>
+Sample line 1: {&quot;version&quot;: &quot;1.3&quot;, &quot;accountId&quot;: &quot;111122223333&quot;, &quot;configurationItemCaptureTime&quot;: &quot;2026-08-21T10:00:00.000Z&quot;, &quot;c ...</code></pre>
+      </div>
+      <p>To reproduce: save <code class="inline">lambda.py</code> alongside a small script that mocks <code class="inline">boto3.client("s3").get_object</code> to return a locally gzipped, fabricated AWS Config snapshot, starts a local <code class="inline">http.server</code> on <code class="inline">127.0.0.1</code>, sets <code class="inline">TARGET_URL</code> to that local server, and calls <code class="inline">handler()</code> directly with a synthetic S3 event. No <code class="inline">terraform apply</code>, no AWS credentials, no network access beyond localhost. Good for iterating on the Lambda quickly; it does not prove the Terraform, IAM, or the receiving side actually work.</p>
+
+      <h3>Level 2 — the real thing: a real AWS account into a local k3s SIEM stand-in</h3>
+      <p>This is the current validation path — real AWS Config, real S3, real Lambda, real HTTPS over the internet — landing not in production, but in a disposable local Kubernetes pod running the exact same receiving-side files the SIEM would run. That local pod and its k3s setup are documented in the companion <strong>SIEM Feature Support</strong> doc, Section 6, Levels 1–3; this section is the AWS-side half of that same test run.</p>
+      <ol class="steps">
+        <li><span class="step-num">1</span><div><h4>Use the full variant for the test account</h4><p>A fresh test/sandbox AWS account almost certainly doesn't have AWS Config enabled yet. Rather than enable it by hand first, apply the <a href="#variant">full variant</a> (Section 13) — it stands up the S3 bucket, the Config recorder, and the delivery channel in one <code class="inline">terraform apply</code>, alongside the same Lambda from Section 6.</p></div></li>
+        <li><span class="step-num">2</span><div><h4>Stand up the receiving side locally</h4><p>Follow the SIEM Feature Support doc's Section 6, Levels 1 and 2 — Docker Compose, then k3s — so there's a real Logstash+Alloy pod listening on <code class="inline">localhost:9090</code>, authenticating with the same <code class="inline">testuser</code>/<code class="inline">testpass</code> credentials baked into its local <code class="inline">pipeline.conf</code>.</p></div></li>
+        <li><span class="step-num">3</span><div><h4>Tunnel that pod out to a public HTTPS URL</h4><p>AWS Lambda can't reach a laptop's <code class="inline">localhost</code>. Port-forward the k3s Service and open a tunnel:</p></div></li>
+      </ol>
+      <div class="code-block term">
+        <div class="code-head"><span class="code-path">terminal 1 / terminal 2</span></div>
+        <pre><code>kubectl port-forward svc/aws-aws-config 9090:9090 -n tenant-canary-user
+ngrok http 9090   # prints something like https://a1b2c3d4.ngrok-free.app</code></pre>
+      </div>
+      <ol class="steps" style="counter-reset: none;">
+        <li><span class="step-num">4</span><div><h4>Point this test run's <code class="inline">terraform.tfvars</code> at the tunnel</h4></div></li>
+      </ol>
+      <div class="code-block">
+        <div class="code-head"><span class="chip chip--modified">Values for this test run, not the generic example</span><span class="code-path">terraform.tfvars</span></div>
+        <pre><code>username = &quot;testuser&quot;
+password = &quot;testpass&quot;
+
+target_url = &quot;https://a1b2c3d4.ngrok-free.app/&quot;
+
+# only needed for the customer variant - the full variant creates its own bucket
+# bucket_name / bucket_arn = (not set - using the full variant)
+
+accuknox_suffix = &quot;accuknox-awsconfig-test&quot;
+insecure_tls    = &quot;&quot;
+
+lambda_memory_mb       = 512
+lambda_timeout_seconds = 120
+</code></pre>
+      </div>
+      <ol class="steps" style="counter-reset: none;">
+        <li><span class="step-num">5</span><div><h4><code class="inline">terraform apply</code></h4><p>Against the test AWS account, per Section 7 — with the full variant's extra resources from Section 13 included</p></div></li>
+        <li><span class="step-num">6</span><div><h4>Trigger a snapshot without waiting for the schedule</h4><p><code class="inline">aws configservice deliver-config-snapshot --delivery-channel-name &lt;name-from-terraform-output&gt;</code> — forces AWS Config to deliver immediately instead of on its normal periodic cadence</p></div></li>
+        <li><span class="step-num">7</span><div><h4>Confirm it arrived, on both ends</h4><p><code class="inline">aws logs tail</code> on the Lambda (Section 7's verify command) for <code class="inline">Loaded N configurationItems</code> and <code class="inline">Status: 200</code>; then query the local Loki for <code class="inline">{job="awsconfig"}</code> (SIEM Feature Support doc, Section 6) and confirm the same resource data is there</p></div></li>
+        <li><span class="step-num">8</span><div><h4>Tear down</h4><p><code class="inline">terraform destroy</code>, stop the <code class="inline">ngrok</code> and <code class="inline">kubectl port-forward</code> processes, and tear down the local k3s cluster per the companion doc</p></div></li>
+      </ol>
+      <div class="callout">
+        <span class="callout-label">What this actually proves</span>
+        <p>Not just "the Lambda's Python is correct" (Level 1 already showed that) — this proves the whole chain a real customer's data would travel: AWS Config's real file format, a real S3 event trigger, real IAM permissions, a real HTTPS POST with Basic Auth crossing the open internet, and the receiving side's own auth check and field-stripping. The only thing standing in for production is where the pod happens to be running.</p>
+      </div>
+    </section>
+
+    <section id="outputs">
+      <div class="section-head"><span class="section-num">10</span><h2>Outputs</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Output</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td class="path">lambda_function_name</td><td>Name of the deployed Lambda function</td></tr>
+            <tr><td class="path">lambda_role_arn</td><td>ARN of the Lambda execution role</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="cleanup">
+      <div class="section-head"><span class="section-num">11</span><h2>Cleanup / destroy</h2></div>
+      <div class="code-block">
+        <div class="code-head"><span class="code-path">shell</span></div>
+        <pre><code>terraform destroy -var-file=&quot;terraform.tfvars&quot;</code></pre>
+      </div>
+      <p>Removes the Lambda function, its IAM role and policies, the S3 bucket notification, and the CloudWatch log group. Your S3 bucket and AWS Config recorder are <strong>not</strong> touched — they're existing resources managed outside this module.</p>
+    </section>
+
+    <section id="troubleshooting">
+      <div class="section-head"><span class="section-num">12</span><h2>Troubleshooting</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Issue</th><th>Solution</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">AccessDenied</code> on S3 bucket</td><td>Ensure <code class="inline">bucket_arn</code> is correct and the Lambda IAM role has <code class="inline">s3:GetObject</code> on <code class="inline">arn:aws:s3:::your-bucket/*</code></td></tr>
+            <tr><td>Lambda not triggering</td><td>Verify AWS Config is actually delivering to the bucket: <code class="inline">aws s3 ls s3://your-bucket/AWSLogs/&lt;account-id&gt;/Config/ --recursive</code></td></tr>
+            <tr><td>Lambda fires on unrelated files too</td><td>Set <code class="inline">config_key_prefix</code> — common when the bucket is shared with CloudTrail or other deliveries</td></tr>
+            <tr><td>Lambda timeout on large accounts</td><td>Increase <code class="inline">lambda_timeout_seconds</code> and/or <code class="inline">lambda_memory_mb</code> — a full snapshot for a large account can take longer to download, decompress, and post</td></tr>
+            <tr><td>Target endpoint rejects requests</td><td>Verify <code class="inline">target_url</code>, <code class="inline">username</code>/<code class="inline">password</code>, and that the endpoint accepts <code class="inline">application/x-ndjson</code> POSTs</td></tr>
+            <tr><td>TLS certificate errors</td><td>If using self-signed certs, set <code class="inline">insecure_tls = "true"</code> (not recommended for production)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span class="code-path">useful debug commands</span></div>
+        <pre><code># Check Lambda exists and its config
+aws lambda get-function --function-name accuknox-awsconfig-collector-log-forwarder-&lt;suffix&gt;
+
+# Check S3 bucket notification config
+aws s3api get-bucket-notification-configuration --bucket your-aws-config-s3-bucket
+
+# Tail Lambda logs in real-time
+aws logs tail &quot;/aws/lambda/accuknox-awsconfig-collector-log-forwarder-&lt;suffix&gt;&quot; --follow
+
+# Manually test: copy a real Config snapshot object to trigger the Lambda
+aws s3 cp existing-config-snapshot.json.gz s3://your-bucket/AWSLogs/123456789012/Config/us-east-1/2026/8/21/ConfigSnapshot/test.json.gz</code></pre>
+      </div>
+    </section>
+
+    <section id="variant">
+      <div class="section-head"><span class="section-num">13</span><h2>Full vs customer variant</h2></div>
+      <p>Mirroring how <code class="inline">cloudtrail-single-account</code> offers both variants: <strong>customer</strong> (this document) assumes AWS Config and its S3 bucket already exist; <strong>full</strong> would additionally stand up AWS Config itself, for accounts that don't have it enabled yet.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Feature</th><th>Full</th><th>Customer</th></tr></thead>
+          <tbody>
+            <tr><td>Creates S3 bucket</td><td>✅ Yes</td><td>❌ No (uses existing)</td></tr>
+            <tr><td>Enables AWS Config recorder + delivery channel</td><td>✅ Yes</td><td>❌ No (uses existing)</td></tr>
+            <tr><td>Creates Lambda forwarder</td><td>✅ Yes</td><td>✅ Yes</td></tr>
+            <tr><td>S3 event notification</td><td>✅ Yes</td><td>✅ Yes</td></tr>
+            <tr><td>IAM roles &amp; policies</td><td>✅ Yes</td><td>✅ Yes</td></tr>
+            <tr><td><strong>Use when</strong></td><td>You need everything from scratch</td><td>You already have AWS Config → S3 set up</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The full variant adds these resources on top of everything above (same Lambda, same <code class="inline">lambda.py</code>, unchanged):</p>
+      <div class="code-block">
+        <div class="code-head"><span class="chip chip--new">Additional, full variant only</span><span class="code-path">main.tf (excerpt)</span></div>
+        <pre><code>resource &quot;aws_s3_bucket&quot; &quot;config_bucket&quot; {
+  bucket = &quot;${var.accuknox_suffix}-bucket-${random_string.suffix.result}&quot;
+}
+
+resource &quot;aws_s3_bucket_policy&quot; &quot;config_bucket_policy&quot; {
+  bucket = aws_s3_bucket.config_bucket.id
+  policy = jsonencode({
+    Version = &quot;2012-10-17&quot;
+    Statement = [
+      {
+        Sid       = &quot;AWSConfigBucketPermissionsCheck&quot;
+        Effect    = &quot;Allow&quot;
+        Principal = { Service = &quot;config.amazonaws.com&quot; }
+        Action    = &quot;s3:GetBucketAcl&quot;
+        Resource  = aws_s3_bucket.config_bucket.arn
+      },
+      {
+        Sid       = &quot;AWSConfigBucketDelivery&quot;
+        Effect    = &quot;Allow&quot;
+        Principal = { Service = &quot;config.amazonaws.com&quot; }
+        Action    = &quot;s3:PutObject&quot;
+        Resource  = &quot;${aws_s3_bucket.config_bucket.arn}/*&quot;
+        Condition = { StringEquals = { &quot;s3:x-amz-acl&quot; = &quot;bucket-owner-full-control&quot; } }
+      }
+    ]
+  })
+}
+
+resource &quot;aws_iam_role&quot; &quot;config_role&quot; {
+  name = &quot;${var.accuknox_suffix}-config-role-${random_string.suffix.result}&quot;
+  assume_role_policy = jsonencode({
+    Version = &quot;2012-10-17&quot;
+    Statement = [{
+      Action    = &quot;sts:AssumeRole&quot;
+      Effect    = &quot;Allow&quot;
+      Principal = { Service = &quot;config.amazonaws.com&quot; }
+    }]
+  })
+}
+
+resource &quot;aws_iam_role_policy_attachment&quot; &quot;config_role_policy&quot; {
+  role       = aws_iam_role.config_role.name
+  policy_arn = &quot;arn:aws:iam::aws:policy/service-role/AWS_ConfigRole&quot;
+}
+
+resource &quot;aws_config_configuration_recorder&quot; &quot;recorder&quot; {
+  name     = &quot;${var.accuknox_suffix}-recorder&quot;
+  role_arn = aws_iam_role.config_role.arn
+  recording_group {
+    all_supported                 = true
+    include_global_resource_types = true
+  }
+}
+
+resource &quot;aws_config_delivery_channel&quot; &quot;channel&quot; {
+  name           = &quot;${var.accuknox_suffix}-channel&quot;
+  s3_bucket_name = aws_s3_bucket.config_bucket.bucket
+  depends_on     = [aws_config_configuration_recorder.recorder]
+}
+
+resource &quot;aws_config_configuration_recorder_status&quot; &quot;recorder_status&quot; {
+  name       = aws_config_configuration_recorder.recorder.name
+  is_enabled = true
+  depends_on = [aws_config_delivery_channel.channel]
+}
+
+# In the full variant, config_key_prefix / bucket_name / bucket_arn are no
+# longer inputs - the Lambda references aws_s3_bucket.config_bucket
+# directly, same as cloudtrail-single-account/full does today.</code></pre>
+      </div>
+    </section>
+
+    <section id="notes">
+      <div class="section-head"><span class="section-num">—</span><h2>Notes</h2></div>
+      <ul>
+        <li>The provider defaults to <strong>us-west-1</strong>, matching every other kit in this folder. Update <code class="inline">provider.tf</code> if your resources are elsewhere.</li>
+        <li>The Lambda uses <strong>Python 3.9</strong>, same runtime as the CloudTrail kit, for consistency.</li>
+        <li>CloudWatch log retention is <strong>3 days</strong> to minimize cost.</li>
+        <li>Resource names include a <strong>random 5-character suffix</strong> to avoid collisions.</li>
+        <li>This kit knows nothing about AccuKnox's Kubernetes cluster, tenants, or Vault. <code class="inline">target_url</code>/<code class="inline">username</code>/<code class="inline">password</code> are handed to it already-built. See the companion document for where those values come from.</li>
+      </ul>
+      <footer>
+        <span>ak-prod-siem — AWS Config Forwarder onboarding kit (Doc 1 of 2)</span>
+        <span>No production files modified while preparing this document</span>
+      </footer>
+    </section>
+  </main>
+</div>

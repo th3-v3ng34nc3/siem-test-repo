@@ -1,0 +1,41 @@
+# ===========================================
+# Required Variables — MUST be filled in
+# ===========================================
+
+# AccuKnox CDR / SIEM endpoint credentials
+username = "your-accuknox-username"
+password = "your-accuknox-password"
+
+# Target HTTPS endpoint to forward AWS Config files to
+target_url = "https://your-accuknox-siem-endpoint.com/ingest"
+
+# Existing S3 bucket that receives AWS Config snapshot/history files
+bucket_name = "your-aws-config-s3-bucket"
+bucket_arn  = "arn:aws:s3:::your-aws-config-s3-bucket"
+
+# Region the bucket above is actually in. Required: S3 event notifications
+# can only invoke a Lambda in the same region as the bucket, so this must
+# match, not just be "your usual region".
+region = "us-west-2"
+
+# Scope the trigger to AWS Config's own files. Required if this bucket
+# is also used by CloudTrail or anything else - otherwise leave as ""
+config_key_prefix = "AWSLogs/123456789012/Config/"
+
+
+# ===========================================
+# Optional Variables — defaults are fine
+# ===========================================
+
+# Unique suffix for resource naming
+accuknox_suffix = "accuknox-awsconfig-collector"
+
+# Lambda chunking config (empty string = use Lambda code defaults)
+chunk_size   = ""   # defaults to 3 MB in lambda code
+line_limit   = ""   # defaults to 1000 lines in lambda code
+insecure_tls = ""   # defaults to false in lambda code ("true" or "false")
+
+# Sized up from CloudTrail's Lambda defaults - AWS Config snapshots
+# can be a full account inventory, much larger than a CloudTrail delta
+lambda_memory_mb       = 512
+lambda_timeout_seconds = 120

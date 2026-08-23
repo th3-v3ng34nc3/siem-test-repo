@@ -1,0 +1,44 @@
+# AWS Configuration. Keep the region to us-east-2 as the S3 bucket is in that region.
+aws_profile      = "your-aws-profile"
+aws_region       = "us-east-2"
+target_regions   = ["us-east-2"]
+
+# Organization Configuration
+org_id                 = "r-xxxx"
+management_account_id  = "123456789012"
+
+# Account Targeting
+# Use one of the following patterns:
+
+# Option 1: Deploy to all accounts in the organization
+account_filter_type = "ALL"
+target_accounts     = []
+
+# Option 2: Deploy only to specific accounts (INCLUDE)
+# account_filter_type = "INCLUDE"
+# target_accounts     = ["111111111111", "222222222222", "333333333333"]
+
+# Option 3: Deploy to all accounts except specific ones (EXCLUDE)
+# account_filter_type = "EXCLUDE"
+# target_accounts     = ["444444444444", "555555555555"]
+
+# CloudFormation StackSet Configuration
+stackset_name = "AccuKnoxSIEMDeployment"
+
+# AccuKnox SIEM Configuration
+siem_username = "admin"
+siem_password = "<accuknox_siem_password>"
+siem_host     = "siem.accuknox.com"
+siem_port     = "9200"
+
+# Lambda Deployment Configuration
+lambda_code_s3_bucket = "lambda-siem"
+lambda_code_s3_key    = "ak-cdr.zip"
+
+# Tags
+tags = {
+  Project     = "AccuKnox-SIEM"
+  Environment = "production"
+  ManagedBy   = "terraform"
+  Owner       = "security-team"
+}

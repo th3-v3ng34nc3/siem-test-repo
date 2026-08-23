@@ -1,0 +1,32 @@
+# ===========================================
+# Required Variables — MUST be filled in
+# ===========================================
+
+# Basic auth credentials for the AccuKnox CDR / SIEM HTTPS endpoint
+username = "your-accuknox-username"
+password = "your-accuknox-password"
+
+# HTTPS endpoint that receives forwarded CloudWatch log events
+cloudwatch_target_url = "https://your-accuknox-cdr-endpoint.com/ingest"
+
+# Map of CloudWatch Log Group name -> friendly source label to subscribe
+# (required — empty map means no subscription filters are created and no logs
+# will be shipped). The label is forwarded to SIEM on every event as "log_source".
+log_groups = {
+  "/aws/lambda/my-function"     = "My Function"
+  "/aws/eks/my-cluster/cluster" = "EKS Cluster"
+  "/var/log/my-app"             = "My App"
+}
+
+
+# ===========================================
+# Optional Variables — defaults are fine
+# ===========================================
+
+# Prefix used for naming the Lambda function and IAM role
+accuknox_suffix = "accuknox_cloudtrail_collector"
+
+# Lambda chunking / batching config
+chunk_size   = "3145728"  # 3 MB, in bytes
+line_limit   = "1000"     # max log lines per HTTPS POST
+insecure_tls = "false"    # set to "true" to skip TLS verification (not recommended)

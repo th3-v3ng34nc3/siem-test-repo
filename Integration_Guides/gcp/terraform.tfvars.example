@@ -1,0 +1,36 @@
+# ===========================================
+# Required Variables — MUST be filled in
+# ===========================================
+
+# The GCP project ID where resources will be created
+project_id = "your-gcp-project-id"
+
+# List of GCP project IDs to include in the audit log sink filter
+projects = [
+  "project-a",
+  "project-b",
+]
+
+# GCP region for resource deployment
+region = "us-central1"
+
+# GCP Organization ID
+org_id = "00000000000000"
+
+
+# ===========================================
+# Optional Variables — defaults are fine
+# ===========================================
+
+pubsub_topic_name  = "accuknox-siem"
+subscription_name  = "accuknox-siem-sub"
+ack_deadline_seconds = 10
+
+retain_acked_messages    = false
+message_retention_duration = "604800s" # 7 days
+enable_message_ordering  = false
+expiration_policy_ttl    = "2678400s" # 31 days
+enable_exactly_once_delivery = true
+
+service_account_id = "accuknox-cdr-pubsub-reader"
+sink_name          = "accuknox-audit-logs-to-pubsub"

@@ -1,0 +1,170 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "AccuKnox SIEM CloudTrail integration using S3-based Lambda deployment"
+
+Parameters:
+  OrgId:
+    Type: String
+    Description: Organization ID for index naming
+    Default: "r-xxxx"
+  AccuknoxSIEMUsername:
+    Type: String
+    Default: admin
+  AccuKnoxSIEMPassword:
+    Type: String
+    Default: admin
+    NoEcho: true
+  AccuKnoxSIEMHost:
+    Type: String
+    Default: siem.accuknox.com
+  AccuKnoxSIEMPort:
+    Type: String
+    Default: "9200"
+  LambdaCodeS3Bucket:
+    Type: String
+    Description: S3 bucket containing the Lambda deployment package
+    Default: accuknox-siem-lambda-code
+  LambdaCodeS3Key:
+    Type: String
+    Description: S3 key for the Lambda deployment package
+    Default: accuknox-siem-cloudtrail-processor.zip
+
+Resources:
+  # Lambda Execution Role
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName:
+            !Join [
+              "-",
+              [
+                "LambdaS3EventPolicyForAccuKnoxSIEM",
+                !Select [
+                  1,
+                  !Split ["-", !Select [2, !Split ["/", !Ref "AWS::StackId"]]],
+                ],
+              ],
+            ]
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "s3:GetObject"
+                  - "s3:PutBucketNotification"
+                  - "s3:GetBucketNotification"
+                Resource:
+                  - !Sub "arn:aws:s3:::accuknox-siem-cloudtrail-logs-${AWS::AccountId}-${AWS::Region}/*"
+                  - !Sub "arn:aws:s3:::accuknox-siem-cloudtrail-logs-${AWS::AccountId}-${AWS::Region}"
+              - Effect: "Allow"
+                Action:
+                  - "logs:*"
+                Resource: "*"
+    DeletionPolicy: Delete
+
+  # Lambda Function using S3 deployment
+  S3EventLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName:
+        !Join [
+          "-",
+          [
+            "S3EventHandlerForAccuKnoxSIEM",
+            !Select [
+              1,
+              !Split ["-", !Select [2, !Split ["/", !Ref "AWS::StackId"]]],
+            ],
+          ],
+        ]
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.13
+      Handler: lambda.lambda_handler
+      Code:
+        S3Bucket: !Ref LambdaCodeS3Bucket
+        S3Key: !Ref LambdaCodeS3Key
+      Timeout: 300
+      Environment:
+        Variables:
+          ACCUKNOX_SIEM_USERNAME: !Ref AccuknoxSIEMUsername
+          ACCUKNOX_SIEM_PASSWORD: !Ref AccuKnoxSIEMPassword
+          ACCUKNOX_SIEM_HOST: !Ref AccuKnoxSIEMHost
+          ACCUKNOX_SIEM_PORT: !Ref AccuKnoxSIEMPort
+          ACCUKNOX_SIEM_INDEX: !Sub "akusprod-aws-cloudguardian-1684-${OrgId}-${AWS::AccountId}"
+    DeletionPolicy: Delete
+    DependsOn: LambdaExecutionRole
+
+  # Grant permission for S3 to invoke Lambda
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !Ref S3EventLambda
+      Principal: "s3.amazonaws.com"
+      SourceArn: !Sub arn:aws:s3:::accuknox-siem-cloudtrail-logs-${AWS::AccountId}-${AWS::Region}
+    DeletionPolicy: Delete
+
+  # S3 Bucket to store CloudTrail logs
+  CloudTrailS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "accuknox-siem-cloudtrail-logs-${AWS::AccountId}-${AWS::Region}"
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: "s3:ObjectCreated:*"
+            Function: !GetAtt S3EventLambda.Arn
+    DeletionPolicy: Delete
+    DependsOn: LambdaInvokePermission
+
+  CloudTrailBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref CloudTrailS3Bucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "AWSCloudTrailAclCheck20150319"
+            Effect: "Allow"
+            Principal:
+              Service: "cloudtrail.amazonaws.com"
+            Action: "s3:GetBucketAcl"
+            Resource:
+              - !GetAtt CloudTrailS3Bucket.Arn
+              - !Sub "${CloudTrailS3Bucket.Arn}/*"
+            Condition:
+              StringEquals:
+                aws:SourceArn: !Sub "arn:aws:cloudtrail:${AWS::Region}:${AWS::AccountId}:trail/accuknox-siem-cloudtrail-${AWS::AccountId}"
+
+          - Sid: "AWSCloudTrailWrite20150319"
+            Effect: "Allow"
+            Principal:
+              Service: "cloudtrail.amazonaws.com"
+            Action: "s3:PutObject"
+            Resource:
+              - !GetAtt CloudTrailS3Bucket.Arn
+              - !Sub "${CloudTrailS3Bucket.Arn}/*"
+            Condition:
+              StringEquals:
+                aws:SourceArn: !Sub "arn:aws:cloudtrail:${AWS::Region}:${AWS::AccountId}:trail/accuknox-siem-cloudtrail-${AWS::AccountId}"
+                s3:x-amz-acl: "bucket-owner-full-control"
+    DeletionPolicy: Delete
+    DependsOn: CloudTrailS3Bucket
+
+  # CloudTrail Trail
+  CloudTrailTrail:
+    Type: AWS::CloudTrail::Trail
+    Properties:
+      TrailName: !Sub "accuknox-siem-cloudtrail-${AWS::AccountId}"
+      S3BucketName: !Ref CloudTrailS3Bucket
+      IsLogging: true
+      IsMultiRegionTrail: true
+      IncludeGlobalServiceEvents: true
+    DependsOn: CloudTrailBucketPolicy
+    DeletionPolicy: Delete
